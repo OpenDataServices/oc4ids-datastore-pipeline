@@ -10,7 +10,22 @@ readme = "README.md"
 dependencies = []
 
 [project.optional-dependencies]
-dev = []
+dev = [
+  "black",
+  "isort",
+  "flake8",
+  "Flake8-pyproject",
+  "mypy",
+]
 
 [project.scripts]
 oc4ids-datastore-pipeline = "oc4ids_datastore_pipeline.pipeline:run"
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 88
+
+[tool.mypy]
+strict = true
