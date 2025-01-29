@@ -14,6 +14,8 @@ flake8==7.1.1
     #   oc4ids-datastore-pipeline (pyproject.toml)
 flake8-pyproject==1.2.3
     # via oc4ids-datastore-pipeline (pyproject.toml)
+iniconfig==2.0.0
+    # via pytest
 isort==6.0.0
     # via oc4ids-datastore-pipeline (pyproject.toml)
 mccabe==0.7.0
@@ -25,14 +27,20 @@ mypy-extensions==1.0.0
     #   black
     #   mypy
 packaging==24.2
-    # via black
+    # via
+    #   black
+    #   pytest
 pathspec==0.12.1
     # via black
 platformdirs==4.3.6
     # via black
+pluggy==1.5.0
+    # via pytest
 pycodestyle==2.12.1
     # via flake8
 pyflakes==3.2.0
     # via flake8
+pytest==8.3.4
+    # via oc4ids-datastore-pipeline (pyproject.toml)
 typing-extensions==4.12.2
     # via mypy
