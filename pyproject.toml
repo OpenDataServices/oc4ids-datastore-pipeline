@@ -1,0 +1,16 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "oc4ids-datastore-pipeline"
+description = "OC4IDS Datastore Pipeline"
+version = "1.0.0"
+readme = "README.md"
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+
+[project.scripts]
+oc4ids-datastore-pipeline = "oc4ids_datastore_pipeline.pipeline:run"
