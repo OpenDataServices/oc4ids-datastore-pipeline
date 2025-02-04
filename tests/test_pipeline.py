@@ -1,3 +1,7 @@
+import os
+import tempfile
+from textwrap import dedent
+
 import pytest
 from pytest_mock import MockerFixture
 
@@ -5,6 +9,7 @@ from oc4ids_datastore_pipeline.pipeline import (
     download_json,
     process_dataset,
     validate_json,
+    write_json_to_file,
 )
 
 
@@ -45,6 +50,34 @@ def test_validate_json_raises_validation_errors_exception(
 
     assert "Validation failed" in str(exc_info.value)
     assert "Dataset has 2 validation errors" in str(exc_info.value)
+
+
+def test_write_json_to_file_writes_in_correct_format() -> None:
+    with tempfile.TemporaryDirectory() as dir:
+        file_name = os.path.join(dir, "test_dataset.json")
+        write_json_to_file(file_name=file_name, json_data={"key": "value"})
+
+        expected = dedent(
+            """\
+            {
+                "key": "value"
+            }"""
+        )
+        with open(file_name) as file:
+            assert file.read() == expected
+
+
+def test_write_json_to_file_raises_failure_exception(mocker: MockerFixture) -> None:
+    patch_json_dump = mocker.patch("oc4ids_datastore_pipeline.pipeline.json.dump")
+    patch_json_dump.side_effect = Exception("Mocked exception")
+
+    with pytest.raises(Exception) as exc_info:
+        with tempfile.TemporaryDirectory() as dir:
+            file_name = os.path.join(dir, "test_dataset.json")
+            write_json_to_file(file_name=file_name, json_data={"key": "value"})
+
+            assert "Error while writing to JSON file" in str(exc_info.value)
+            assert "Mocked exception" in str(exc_info.value)
 
 
 def test_process_dataset_catches_exception(mocker: MockerFixture) -> None:

@@ -1,4 +1,6 @@
+import json
 import logging
+import os
 from typing import Any
 
 import requests
@@ -41,11 +43,23 @@ def validate_json(dataset_name: str, json_data: Any) -> None:
         raise Exception("Validation failed", e)
 
 
+def write_json_to_file(file_name: str, json_data: Any) -> None:
+    logger.info(f"Writing dataset to file {file_name}")
+    try:
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
+        with open(file_name, "w") as file:
+            json.dump(json_data, file, indent=4)
+        logger.info(f"Finished writing to {file_name}")
+    except Exception as e:
+        raise Exception("Error while writing to JSON file", e)
+
+
 def process_dataset(dataset_name: str, dataset_url: str) -> None:
     logger.info(f"Processing dataset {dataset_name}")
     try:
         json_data = download_json(dataset_url)
         validate_json(dataset_name, json_data)
+        write_json_to_file(f"data/{dataset_name}.json", json_data)
         logger.info(f"Processed dataset {dataset_name}")
     except Exception as e:
         logger.warning(f"Failed to process dataset {dataset_name} with error {e}")
