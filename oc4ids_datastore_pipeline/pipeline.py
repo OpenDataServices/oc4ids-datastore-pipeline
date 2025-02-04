@@ -8,15 +8,23 @@ from libcoveoc4ids.api import oc4ids_json_output
 
 logger = logging.getLogger(__name__)
 
-REGISTERED_DATASETS = {
-    "uganda_gpp": "https://gpp.ppda.go.ug/adminapi/public/api/open-data/v1/infrastructure/projects/download?format=json",  # noqa: E501
-    "ghana_cost_sekondi_takoradi": "https://costsekondi-takoradigh.org/uploads/projectJson.json",  # noqa: E501
-    "mexico_cost_jalisco": "http://www.costjalisco.org.mx/jsonprojects",
-    "mexico_nuevo_leon": "http://si.nl.gob.mx/siasi_ws/api/edcapi/DescargarProjectPackage",  # noqa: E501
-    "indonesia_cost_west_lombok": "https://intras.lombokbaratkab.go.id/oc4ids",
-    "ukraine_cost_ukraine": "https://portal.costukraine.org/data.json",
-    "malawi_cost_malawi": "https://ippi.mw/api/projects/query",
-}
+
+def fetch_registered_datasets() -> dict[str, str]:
+    logger.info("Fetching registered datasets list from registry")
+    try:
+        url = "https://opendataservices.github.io/oc4ids-registry/datatig/type/dataset/records_api.json"  # noqa: E501
+        r = requests.get(url)
+        r.raise_for_status()
+        json_data = r.json()
+        registered_datasets = {
+            key: value["fields"]["url"]["value"]
+            for (key, value) in json_data["records"].items()
+        }
+        registered_datasets_count = len(registered_datasets)
+        logger.info(f"Fetched URLs for {registered_datasets_count} datasets")
+        return registered_datasets
+    except Exception as e:
+        raise Exception("Failed to fetch datasets list from registry", e)
 
 
 def download_json(url: str) -> Any:
@@ -66,7 +74,8 @@ def process_dataset(dataset_name: str, dataset_url: str) -> None:
 
 
 def process_datasets() -> None:
-    for name, url in REGISTERED_DATASETS.items():
+    registered_datasets = fetch_registered_datasets()
+    for name, url in registered_datasets.items():
         process_dataset(name, url)
 
 
