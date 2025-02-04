@@ -6,6 +6,10 @@
 #
 black==25.1.0
     # via oc4ids-datastore-pipeline (pyproject.toml)
+certifi==2025.1.31
+    # via requests
+charset-normalizer==3.4.1
+    # via requests
 click==8.1.8
     # via black
 flake8==7.1.1
@@ -14,6 +18,8 @@ flake8==7.1.1
     #   oc4ids-datastore-pipeline (pyproject.toml)
 flake8-pyproject==1.2.3
     # via oc4ids-datastore-pipeline (pyproject.toml)
+idna==3.10
+    # via requests
 iniconfig==2.0.0
     # via pytest
 isort==6.0.0
@@ -41,6 +47,18 @@ pycodestyle==2.12.1
 pyflakes==3.2.0
     # via flake8
 pytest==8.3.4
+    # via
+    #   oc4ids-datastore-pipeline (pyproject.toml)
+    #   pytest-mock
+pytest-mock==3.14.0
+    # via oc4ids-datastore-pipeline (pyproject.toml)
+requests==2.32.3
+    # via oc4ids-datastore-pipeline (pyproject.toml)
+types-requests==2.32.0.20241016
     # via oc4ids-datastore-pipeline (pyproject.toml)
 typing-extensions==4.12.2
     # via mypy
+urllib3==2.3.0
+    # via
+    #   requests
+    #   types-requests

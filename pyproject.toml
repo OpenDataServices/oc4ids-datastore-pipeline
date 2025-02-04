@@ -7,7 +7,9 @@ name = "oc4ids-datastore-pipeline"
 description = "OC4IDS Datastore Pipeline"
 version = "0.1.0"
 readme = "README.md"
-dependencies = []
+dependencies = [
+  "requests"
+]
 
 [project.optional-dependencies]
 dev = [
@@ -17,6 +19,8 @@ dev = [
   "Flake8-pyproject",
   "mypy",
   "pytest",
+  "pytest-mock",
+  "types-requests",
 ]
 
 [project.scripts]
@@ -30,3 +34,7 @@ max-line-length = 88
 
 [tool.mypy]
 strict = true
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
