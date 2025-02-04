@@ -103,6 +103,8 @@ platformdirs==4.3.6
     #   requests-cache
 pluggy==1.5.0
     # via pytest
+psycopg2==2.9.10
+    # via oc4ids-datastore-pipeline (pyproject.toml)
 pycodestyle==2.12.1
     # via flake8
 pycparser==2.22
@@ -146,6 +148,8 @@ six==1.17.0
     # via
     #   rfc3339-validator
     #   url-normalize
+sqlalchemy==2.0.37
+    # via oc4ids-datastore-pipeline (pyproject.toml)
 transaction==5.0
     # via zodb
 types-requests==2.32.0.20241016
@@ -154,6 +158,7 @@ typing-extensions==4.12.2
     # via
     #   mypy
     #   referencing
+    #   sqlalchemy
 url-normalize==1.4.3
     # via requests-cache
 urllib3==2.3.0
