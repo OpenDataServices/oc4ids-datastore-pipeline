@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 
 from oc4ids_datastore_pipeline.pipeline import (
     download_json,
+    fetch_license_mappings,
     fetch_registered_datasets,
     process_dataset,
     validate_json,
@@ -41,6 +42,70 @@ def test_fetch_registered_datasets_raises_failure_exception(
 
     assert "Failed to fetch datasets list from registry" in str(exc_info.value)
     assert "Mocked exception" in str(exc_info.value)
+
+
+def test_fetch_license_mappings(mocker: MockerFixture) -> None:
+    mock_response = MagicMock()
+    mock_response.json.return_value = {
+        "records": {
+            "license_1": {
+                "fields": {
+                    "title": {"value": "License 1"},
+                    "urls": {
+                        "values": [
+                            {
+                                "fields": {
+                                    "url": {"value": "https://license_1.com/license"}
+                                }
+                            },
+                            {
+                                "fields": {
+                                    "url": {
+                                        "value": "https://license_1.com/different_url"
+                                    }
+                                }
+                            },
+                        ]
+                    },
+                }
+            },
+            "license_2": {
+                "fields": {
+                    "title": {"value": "License 2"},
+                    "urls": {
+                        "values": [
+                            {
+                                "fields": {
+                                    "url": {"value": "https://license_2.com/license"}
+                                }
+                            },
+                        ]
+                    },
+                }
+            },
+        }
+    }
+    patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
+    patch_get.return_value = mock_response
+
+    result = fetch_license_mappings()
+
+    assert result == {
+        "https://license_1.com/license": "License 1",
+        "https://license_1.com/different_url": "License 1",
+        "https://license_2.com/license": "License 2",
+    }
+
+
+def test_fetch_license_mappings_catches_exception(
+    mocker: MockerFixture,
+) -> None:
+    patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
+    patch_get.side_effect = Exception("Mocked exception")
+
+    result = fetch_license_mappings()
+
+    assert result == {}
 
 
 def test_download_json_raises_failure_exception(mocker: MockerFixture) -> None:
