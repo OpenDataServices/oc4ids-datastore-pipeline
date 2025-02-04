@@ -8,45 +8,9 @@ import requests
 from libcoveoc4ids.api import oc4ids_json_output
 
 from oc4ids_datastore_pipeline.database import Dataset, save_dataset
+from oc4ids_datastore_pipeline.registry import fetch_registered_datasets
 
 logger = logging.getLogger(__name__)
-
-
-def fetch_registered_datasets() -> dict[str, str]:
-    logger.info("Fetching registered datasets list from registry")
-    try:
-        url = "https://opendataservices.github.io/oc4ids-registry/datatig/type/dataset/records_api.json"  # noqa: E501
-        r = requests.get(url)
-        r.raise_for_status()
-        json_data = r.json()
-        registered_datasets = {
-            key: value["fields"]["url"]["value"]
-            for (key, value) in json_data["records"].items()
-        }
-        registered_datasets_count = len(registered_datasets)
-        logger.info(f"Fetched URLs for {registered_datasets_count} datasets")
-        return registered_datasets
-    except Exception as e:
-        raise Exception("Failed to fetch datasets list from registry", e)
-
-
-def fetch_license_mappings() -> dict[str, str]:
-    logger.info("Fetching license mappings from registry")
-    try:
-        url = "https://opendataservices.github.io/oc4ids-registry/datatig/type/license/records_api.json"  # noqa: E501
-        r = requests.get(url)
-        r.raise_for_status()
-        json_data = r.json()
-        return {
-            urls["fields"]["url"]["value"]: license["fields"]["title"]["value"]
-            for license in json_data["records"].values()
-            for urls in license["fields"]["urls"]["values"]
-        }
-    except Exception as e:
-        logger.warning(
-            "Failed to fetch license mappings from registry, with error: " + str(e),
-        )
-        return {}
 
 
 def download_json(url: str) -> Any:
