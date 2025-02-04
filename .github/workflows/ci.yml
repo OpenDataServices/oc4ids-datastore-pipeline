@@ -12,12 +12,12 @@ jobs:
       - name: Install dev requirements
         run: pip install -r requirements_dev.txt
       - name: Check black
-        run: black --check oc4ids_datastore_pipeline/
+        run: black --check oc4ids_datastore_pipeline/ tests/
       - name: Check isort
-        run: isort --check-only oc4ids_datastore_pipeline/
+        run: isort --check-only oc4ids_datastore_pipeline/ tests/
       - name: Check flake8
-        run: flake8 oc4ids_datastore_pipeline/
+        run: flake8 oc4ids_datastore_pipeline/ tests/
       - name: Check mypy
-        run: mypy oc4ids_datastore_pipeline/
+        run: mypy oc4ids_datastore_pipeline/ tests/
       - name: Run tests
         run: pytest

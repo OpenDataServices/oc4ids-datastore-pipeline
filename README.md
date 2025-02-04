@@ -26,10 +26,10 @@ oc4ids-datastore-pipeline
 ### Run linting and type checking
 
 ```
-black oc4ids_datastore_pipeline/
-isort oc4ids_datastore_pipeline/
-flake8 oc4ids_datastore_pipeline/
-mypy oc4ids_datastore_pipeline/
+black oc4ids_datastore_pipeline/ tests/
+isort oc4ids_datastore_pipeline/ tests/
+flake8 oc4ids_datastore_pipeline/ tests/
+mypy oc4ids_datastore_pipeline/ tests/
 ```
 
 ### Run tests
