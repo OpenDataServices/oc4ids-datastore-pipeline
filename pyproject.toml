@@ -8,7 +8,8 @@ description = "OC4IDS Datastore Pipeline"
 version = "0.1.0"
 readme = "README.md"
 dependencies = [
-  "requests"
+  "libcoveoc4ids",
+  "requests",
 ]
 
 [project.optional-dependencies]
@@ -34,6 +35,10 @@ max-line-length = 88
 
 [tool.mypy]
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["libcoveoc4ids.*"]
+follow_untyped_imports = true
 
 [tool.pytest.ini_options]
 log_cli = true

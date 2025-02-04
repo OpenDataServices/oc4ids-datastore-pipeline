@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 import requests
+from libcoveoc4ids.api import oc4ids_json_output
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +29,24 @@ def download_json(url: str) -> Any:
         raise Exception("Download failed", e)
 
 
+def validate_json(dataset_name: str, json_data: Any) -> None:
+    logger.info(f"Validating dataset {dataset_name}")
+    try:
+        validation_result = oc4ids_json_output(json_data=json_data)
+        validation_errors_count = validation_result["validation_errors_count"]
+        if validation_errors_count > 0:
+            raise Exception(f"Dataset has {validation_errors_count} validation errors")
+        logger.info(f"Dataset {dataset_name} is valid")
+    except Exception as e:
+        raise Exception("Validation failed", e)
+
+
 def process_dataset(dataset_name: str, dataset_url: str) -> None:
     logger.info(f"Processing dataset {dataset_name}")
     try:
-        download_json(dataset_url)
+        json_data = download_json(dataset_url)
+        validate_json(dataset_name, json_data)
+        logger.info(f"Processed dataset {dataset_name}")
     except Exception as e:
         logger.warning(f"Failed to process dataset {dataset_name} with error {e}")
 
