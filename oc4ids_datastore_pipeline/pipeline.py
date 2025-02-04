@@ -25,7 +25,7 @@ def download_json(url: str) -> Any:
         raise Exception("Download failed", e)
 
 
-def validate_json(dataset_name: str, json_data: Any) -> None:
+def validate_json(dataset_name: str, json_data: dict[str, Any]) -> None:
     logger.info(f"Validating dataset {dataset_name}")
     try:
         validation_result = oc4ids_json_output(json_data=json_data)
@@ -37,26 +37,28 @@ def validate_json(dataset_name: str, json_data: Any) -> None:
         raise Exception("Validation failed", e)
 
 
-def write_json_to_file(file_name: str, json_data: Any) -> None:
+def write_json_to_file(file_name: str, json_data: dict[str, Any]) -> str:
     logger.info(f"Writing dataset to file {file_name}")
     try:
         os.makedirs(os.path.dirname(file_name), exist_ok=True)
         with open(file_name, "w") as file:
             json.dump(json_data, file, indent=4)
         logger.info(f"Finished writing to {file_name}")
+        return file_name
     except Exception as e:
         raise Exception("Error while writing to JSON file", e)
 
 
 def save_dataset_metadata(
-    dataset_name: str, source_url: str, publisher_name: str, file_name: str
+    dataset_name: str, source_url: str, json_data: dict[str, Any], json_url: str
 ) -> None:
     logger.info(f"Saving metadata for dataset {dataset_name}")
+    publisher_name = json_data.get("publisher", {}).get("name", "")
     dataset = Dataset(
         dataset_id=dataset_name,
         source_url=source_url,
         publisher_name=publisher_name,
-        json_url=file_name,
+        json_url=json_url,
         updated_at=datetime.datetime.now(datetime.UTC),
     )
     save_dataset(dataset)
@@ -67,14 +69,12 @@ def process_dataset(dataset_name: str, dataset_url: str) -> None:
     try:
         json_data = download_json(dataset_url)
         validate_json(dataset_name, json_data)
-        file_name = f"data/{dataset_name}.json"
-        write_json_to_file(file_name, json_data)
-        publisher_name = json_data.get("publisher", {}).get("name", "")
+        json_url = write_json_to_file(f"data/{dataset_name}.json", json_data)
         save_dataset_metadata(
             dataset_name=dataset_name,
             source_url=dataset_url,
-            publisher_name=publisher_name,
-            file_name=file_name,
+            json_data=json_data,
+            json_url=json_url,
         )
         logger.info(f"Processed dataset {dataset_name}")
     except Exception as e:
