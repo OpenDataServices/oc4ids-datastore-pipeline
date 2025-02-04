@@ -36,12 +36,6 @@ def get_engine() -> Engine:
     return _engine
 
 
-def create_tables() -> None:
-    logger.info("Creating database tables")
-    Base.metadata.create_all(get_engine())
-    logger.info("Created tables successfully")
-
-
 def save_dataset(dataset: Dataset) -> None:
     with Session(get_engine()) as session:
         session.merge(dataset)

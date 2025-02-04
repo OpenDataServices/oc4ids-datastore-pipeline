@@ -7,7 +7,7 @@ from typing import Any
 import requests
 from libcoveoc4ids.api import oc4ids_json_output
 
-from oc4ids_datastore_pipeline.database import Dataset, create_tables, save_dataset
+from oc4ids_datastore_pipeline.database import Dataset, save_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -105,5 +105,4 @@ def process_datasets() -> None:
 
 
 def run() -> None:
-    create_tables()
     process_datasets()

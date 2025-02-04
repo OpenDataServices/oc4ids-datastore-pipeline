@@ -23,6 +23,12 @@ pip install -r requirements_dev.txt
 export DATABASE_URL="postgresql://oc4ids_datastore@localhost/oc4ids_datastore"
 ```
 
+### Run database migrations
+
+```
+alembic upgrade head
+```
+
 ### Run app
 
 ```
@@ -43,4 +49,10 @@ mypy oc4ids_datastore_pipeline/ tests/
 
 ```
 pytest
+```
+
+### Generating new database migrations
+
+```
+alembic revision --autogenerate -m "<MESSAGE HERE>"
 ```
