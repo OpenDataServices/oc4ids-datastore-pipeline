@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 from oc4ids_datastore_pipeline.pipeline import (
     download_json,
     process_dataset,
+    transform_to_csv_and_xlsx,
     validate_json,
     write_json_to_file,
 )
@@ -78,6 +79,27 @@ def test_write_json_to_file_raises_failure_exception(mocker: MockerFixture) -> N
 
             assert "Error while writing to JSON file" in str(exc_info.value)
             assert "Mocked exception" in str(exc_info.value)
+
+
+def test_transform_to_csv_and_xlsx_returns_correct_paths(mocker: MockerFixture) -> None:
+    mocker.patch("oc4ids_datastore_pipeline.pipeline.flattentool.flatten")
+
+    csv_path, xlsx_path = transform_to_csv_and_xlsx("dir/dataset/dataset.json")
+
+    assert csv_path == "dir/dataset/dataset"
+    assert xlsx_path == "dir/dataset/dataset.xlsx"
+
+
+def test_transform_to_csv_and_xlsx_catches_exception(mocker: MockerFixture) -> None:
+    patch_flatten = mocker.patch(
+        "oc4ids_datastore_pipeline.pipeline.flattentool.flatten"
+    )
+    patch_flatten.side_effect = Exception("Mocked exception")
+
+    csv_path, xlsx_path = transform_to_csv_and_xlsx("dir/dataset/dataset.json")
+
+    assert csv_path is None
+    assert xlsx_path is None
 
 
 def test_process_dataset_catches_exception(mocker: MockerFixture) -> None:

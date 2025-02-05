@@ -9,6 +9,7 @@ version = "0.1.0"
 readme = "README.md"
 dependencies = [
   "alembic",
+  "flattentool",
   "libcoveoc4ids",
   "psycopg2",
   "requests",
@@ -40,7 +41,7 @@ max-line-length = 88
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["libcoveoc4ids.*"]
+module = ["libcoveoc4ids.*", "flattentool.*"]
 follow_untyped_imports = true
 
 [tool.pytest.ini_options]
