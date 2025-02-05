@@ -29,6 +29,10 @@ export DATABASE_URL="postgresql://oc4ids_datastore@localhost/oc4ids_datastore"
 alembic upgrade head
 ```
 
+### S3 environment variables
+
+<!-- TODO: Document -->
+
 ### Run app
 
 ```

@@ -19,6 +19,7 @@ from oc4ids_datastore_pipeline.registry import (
     fetch_registered_datasets,
     get_license_name_from_url,
 )
+from oc4ids_datastore_pipeline.storage import upload_files
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ def save_dataset_metadata(
     dataset_name: str,
     source_url: str,
     json_data: dict[str, Any],
-    json_url: str,
+    json_url: Optional[str],
     csv_url: Optional[str],
     xlsx_url: Optional[str],
 ) -> None:
@@ -114,13 +115,16 @@ def process_dataset(dataset_name: str, dataset_url: str) -> None:
             f"data/{dataset_name}/{dataset_name}.json", json_data
         )
         csv_path, xlsx_path = transform_to_csv_and_xlsx(json_path)
+        json_public_url, csv_public_url, xlsx_public_url = upload_files(
+            json_path=json_path, csv_path=csv_path, xlsx_path=xlsx_path
+        )
         save_dataset_metadata(
             dataset_name=dataset_name,
             source_url=dataset_url,
             json_data=json_data,
-            json_url=json_path,
-            csv_url=csv_path,
-            xlsx_url=xlsx_path,
+            json_url=json_public_url,
+            csv_url=csv_public_url,
+            xlsx_url=xlsx_public_url,
         )
         logger.info(f"Processed dataset {dataset_name}")
     except Exception as e:
@@ -133,6 +137,7 @@ def process_deleted_datasets(registered_datasets: dict[str, str]) -> None:
     for dataset_id in deleted_datasets:
         logger.info(f"Dataset {dataset_id} is no longer in the registry, deleting")
         delete_dataset(dataset_id)
+        # TODO: Delete stored files
 
 
 def process_registry() -> None:

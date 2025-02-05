@@ -16,6 +16,14 @@ backports-datetime-fromisoformat==2.0.3
     # via flattentool
 black==25.1.0
     # via oc4ids-datastore-pipeline (pyproject.toml)
+boto3==1.36.13
+    # via oc4ids-datastore-pipeline (pyproject.toml)
+botocore==1.36.13
+    # via
+    #   boto3
+    #   s3transfer
+botocore-stubs==1.36.12
+    # via types-boto3
 btrees==6.1
     # via zodb
 cattrs==24.1.2
@@ -53,6 +61,10 @@ iniconfig==2.0.0
     # via pytest
 isort==6.0.0
     # via oc4ids-datastore-pipeline (pyproject.toml)
+jmespath==1.0.1
+    # via
+    #   boto3
+    #   botocore
 json-merge-patch==0.2
     # via ocdsextensionregistry
 jsonref==1.1.0
@@ -125,6 +137,10 @@ pytest==8.3.4
     #   pytest-mock
 pytest-mock==3.14.0
     # via oc4ids-datastore-pipeline (pyproject.toml)
+python-dateutil==2.9.0.post0
+    # via botocore
+python-dotenv==1.0.1
+    # via oc4ids-datastore-pipeline (pyproject.toml)
 pytz==2025.1
     # via flattentool
 referencing==0.36.2
@@ -150,10 +166,13 @@ rpds-py==0.22.3
     # via
     #   jsonschema
     #   referencing
+s3transfer==0.11.2
+    # via boto3
 schema==0.7.7
     # via flattentool
 six==1.17.0
     # via
+    #   python-dateutil
     #   rfc3339-validator
     #   url-normalize
 sqlalchemy==2.0.37
@@ -162,8 +181,14 @@ sqlalchemy==2.0.37
     #   oc4ids-datastore-pipeline (pyproject.toml)
 transaction==5.0
     # via zodb
+types-awscrt==0.23.9
+    # via botocore-stubs
+types-boto3==1.36.13
+    # via oc4ids-datastore-pipeline (pyproject.toml)
 types-requests==2.32.0.20241016
     # via oc4ids-datastore-pipeline (pyproject.toml)
+types-s3transfer==0.11.2
+    # via types-boto3
 typing-extensions==4.12.2
     # via
     #   alembic
@@ -174,6 +199,7 @@ url-normalize==1.4.3
     # via requests-cache
 urllib3==2.3.0
     # via
+    #   botocore
     #   requests
     #   requests-cache
     #   types-requests
