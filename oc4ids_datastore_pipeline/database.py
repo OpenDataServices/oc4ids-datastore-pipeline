@@ -8,6 +8,8 @@ from sqlalchemy import (
     Engine,
     String,
     create_engine,
+    delete,
+    select,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
@@ -45,3 +47,16 @@ def save_dataset(dataset: Dataset) -> None:
     with Session(get_engine()) as session:
         session.merge(dataset)
         session.commit()
+
+
+def delete_dataset(dataset_id: str) -> None:
+    with Session(get_engine()) as session:
+        session.execute(delete(Dataset).where(Dataset.dataset_id == dataset_id))
+        session.commit()
+
+
+def get_dataset_ids() -> list[str]:
+    with Session(get_engine()) as session:
+        return [
+            dataset_id for dataset_id in session.scalars(select(Dataset.dataset_id))
+        ]

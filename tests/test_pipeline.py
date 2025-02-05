@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 from oc4ids_datastore_pipeline.pipeline import (
     download_json,
     process_dataset,
+    process_deleted_datasets,
     transform_to_csv_and_xlsx,
     validate_json,
     write_json_to_file,
@@ -100,6 +101,21 @@ def test_transform_to_csv_and_xlsx_catches_exception(mocker: MockerFixture) -> N
 
     assert csv_path is None
     assert xlsx_path is None
+
+
+def test_process_deleted_datasets(mocker: MockerFixture) -> None:
+    patch_get_dataset_ids = mocker.patch(
+        "oc4ids_datastore_pipeline.pipeline.get_dataset_ids"
+    )
+    patch_get_dataset_ids.return_value = ["old_dataset", "test_dataset"]
+    patch_delete_dataset = mocker.patch(
+        "oc4ids_datastore_pipeline.pipeline.delete_dataset"
+    )
+
+    registered_datasets = {"test_dataset": "https://test_dataset.json"}
+    process_deleted_datasets(registered_datasets)
+
+    patch_delete_dataset.assert_called_once_with("old_dataset")
 
 
 def test_process_dataset_catches_exception(mocker: MockerFixture) -> None:
