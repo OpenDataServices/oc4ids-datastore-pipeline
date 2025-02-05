@@ -8,7 +8,10 @@ import requests
 from libcoveoc4ids.api import oc4ids_json_output
 
 from oc4ids_datastore_pipeline.database import Dataset, save_dataset
-from oc4ids_datastore_pipeline.registry import fetch_registered_datasets
+from oc4ids_datastore_pipeline.registry import (
+    fetch_registered_datasets,
+    get_license_name_from_url,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +57,14 @@ def save_dataset_metadata(
 ) -> None:
     logger.info(f"Saving metadata for dataset {dataset_name}")
     publisher_name = json_data.get("publisher", {}).get("name", "")
+    license_url = json_data.get("license", None)
+    license_name = get_license_name_from_url(license_url) if license_url else None
     dataset = Dataset(
         dataset_id=dataset_name,
         source_url=source_url,
         publisher_name=publisher_name,
+        license_url=license_url,
+        license_name=license_name,
         json_url=json_url,
         updated_at=datetime.datetime.now(datetime.UTC),
     )

@@ -1,8 +1,12 @@
 import logging
+from typing import Optional
 
 import requests
 
 logger = logging.getLogger(__name__)
+
+
+_license_mappings = None
 
 
 def fetch_registered_datasets() -> dict[str, str]:
@@ -40,3 +44,12 @@ def fetch_license_mappings() -> dict[str, str]:
             "Failed to fetch license mappings from registry, with error: " + str(e),
         )
         return {}
+
+
+def get_license_name_from_url(
+    url: str, force_refresh: Optional[bool] = False
+) -> Optional[str]:
+    global _license_mappings
+    if force_refresh or (_license_mappings is None):
+        _license_mappings = fetch_license_mappings()
+    return _license_mappings.get(url, None)
