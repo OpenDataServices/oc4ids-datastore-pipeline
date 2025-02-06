@@ -11,6 +11,8 @@ jobs:
           python-version: "3.12"
       - name: Install dev requirements
         run: pip install -r requirements_dev.txt
+      - name: Install local package
+        run: pip install .
       - name: Check black
         run: black --check oc4ids_datastore_pipeline/ tests/
       - name: Check isort
