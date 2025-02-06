@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
-from oc4ids_datastore_pipeline.storage import upload_files
+from oc4ids_datastore_pipeline.storage import delete_files_for_dataset, upload_files
 
 
 @pytest.fixture(autouse=True)
@@ -185,3 +185,32 @@ def test_upload_files_xlsx_catches_upload_exception(mock_client: MagicMock) -> N
             == "https://test-bucket.test-region.digitaloceanspaces.com/test_dataset/test_dataset_csv.zip"  # noqa: E501
         )
         assert xlsx_public_url is None
+
+
+def test_delete_files_for_dataset(mock_client: MagicMock) -> None:
+    mock_client.list_objects_v2.return_value = {
+        "Contents": [
+            {"Key": "test_dataset/test_dataset.json"},
+            {"Key": "test_dataset/test_dataset_csv.zip"},
+            {"Key": "test_dataset/test_dataset.xlsx"},
+        ]
+    }
+
+    delete_files_for_dataset("test_dataset")
+
+    mock_client.delete_objects.assert_called_once_with(
+        Bucket="test-bucket",
+        Delete={
+            "Objects": [
+                {"Key": "test_dataset/test_dataset.json"},
+                {"Key": "test_dataset/test_dataset_csv.zip"},
+                {"Key": "test_dataset/test_dataset.xlsx"},
+            ]
+        },
+    )
+
+
+def test_delete_files_for_dataset_catches_exception(mock_client: MagicMock) -> None:
+    mock_client.list_objects_v2.side_effect = Exception("Mock exception")
+
+    delete_files_for_dataset("test_dataset")

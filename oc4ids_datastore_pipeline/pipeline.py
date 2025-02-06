@@ -19,7 +19,7 @@ from oc4ids_datastore_pipeline.registry import (
     fetch_registered_datasets,
     get_license_name_from_url,
 )
-from oc4ids_datastore_pipeline.storage import upload_files
+from oc4ids_datastore_pipeline.storage import delete_files_for_dataset, upload_files
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,7 @@ def process_deleted_datasets(registered_datasets: dict[str, str]) -> None:
     for dataset_id in deleted_datasets:
         logger.info(f"Dataset {dataset_id} is no longer in the registry, deleting")
         delete_dataset(dataset_id)
-        # TODO: Delete stored files
+        delete_files_for_dataset(dataset_id)
 
 
 def process_registry() -> None:

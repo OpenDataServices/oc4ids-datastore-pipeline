@@ -88,7 +88,6 @@ def upload_files(
     csv_path: Optional[str] = None,
     xlsx_path: Optional[str] = None,
 ) -> tuple[Optional[str], Optional[str], Optional[str]]:
-    # TODO: Option to delete local files once uploaded?
     if not bool(int(os.environ.get("ENABLE_UPLOAD", "0"))):
         logger.info("Upload is disabled, skipping")
         return None, None, None
@@ -96,3 +95,17 @@ def upload_files(
     csv_public_url = _upload_csv(dataset_id, csv_path) if csv_path else None
     xlsx_public_url = _upload_xlsx(dataset_id, xlsx_path) if xlsx_path else None
     return json_public_url, csv_public_url, xlsx_public_url
+
+
+def delete_files_for_dataset(dataset_id: str) -> None:
+    logger.info(f"Deleting files for dataset {dataset_id}")
+    try:
+        client = _get_client()
+        response = client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=dataset_id)
+        if "Contents" in response:
+            objects_to_delete = [{"Key": obj["Key"]} for obj in response["Contents"]]
+            client.delete_objects(
+                Bucket=BUCKET_NAME, Delete={"Objects": objects_to_delete}
+            )
+    except Exception as e:
+        logger.warning(f"Failed to delete files with error {e}")
