@@ -31,7 +31,18 @@ alembic upgrade head
 
 ### S3 environment variables
 
-<!-- TODO: Document -->
+To enable files to be uploaded to S3-compatible storage, the following environment variables must be set:
+
+- `ENABLE_UPLOAD`: 1 to enable, 0 to disable
+- `BUCKET_REGION`:
+- `BUCKET_NAME`
+- `BUCKET_ACCESS_KEY_ID`
+- `BUCKET_ACCESS_KEY_SECRET`
+
+To make this easier, the project uses [`python-dotenv`](https://github.com/theskumar/python-dotenv) to load environment variables from a config file.
+For local development, create a file called `.env.local`, which will be used by default.
+You can change which file is loaded setting the environment variable `APP_ENV`.
+For example the tests set `APP_ENV=test`, which loads variables from `.env.test`.
 
 ### Run app
 
