@@ -28,32 +28,33 @@ def _get_client() -> Any:
     )
 
 
-def _upload_file(local_path: str, bucket_path: str, content_type: str) -> str:
-    logger.info(f"Uploading file {local_path}")
-    client = _get_client()
-    client.upload_file(
-        local_path,
-        BUCKET_NAME,
-        bucket_path,
-        ExtraArgs={"ACL": "public-read", "ContentType": content_type},
-    )
-    public_url = (
-        f"https://{BUCKET_NAME}.{BUCKET_REGION}.digitaloceanspaces.com/" + bucket_path
-    )
-    logger.info(f"Uploaded to {public_url}")
-    return public_url
+def _upload_file(local_path: str, bucket_path: str, content_type: str) -> Optional[str]:
+    try:
+        logger.info(f"Uploading file {local_path}")
+        client = _get_client()
+        client.upload_file(
+            local_path,
+            BUCKET_NAME,
+            bucket_path,
+            ExtraArgs={"ACL": "public-read", "ContentType": content_type},
+        )
+        public_url = (
+            f"https://{BUCKET_NAME}.{BUCKET_REGION}.digitaloceanspaces.com/"
+            + bucket_path
+        )
+        logger.info(f"Uploaded to {public_url}")
+        return public_url
+    except Exception as e:
+        logger.warning(f"Failed to upload {local_path} with error {e}")
+        return None
 
 
 def _upload_json(dataset_id: str, json_path: str) -> Optional[str]:
-    try:
-        return _upload_file(
-            local_path=json_path,
-            bucket_path=f"{dataset_id}/{dataset_id}.json",
-            content_type="application/json",
-        )
-    except Exception as e:
-        logger.warning(f"Failed to upload {json_path} with error {e}")
-        return None
+    return _upload_file(
+        local_path=json_path,
+        bucket_path=f"{dataset_id}/{dataset_id}.json",
+        content_type="application/json",
+    )
 
 
 def _upload_csv(dataset_id: str, csv_path: str) -> Optional[str]:
@@ -63,26 +64,22 @@ def _upload_csv(dataset_id: str, csv_path: str) -> Optional[str]:
         with zipfile.ZipFile(zip_file_path, mode="w") as archive:
             for file_path in directory.rglob("*"):
                 archive.write(file_path, arcname=file_path.relative_to(directory))
-        return _upload_file(
-            local_path=zip_file_path,
-            bucket_path=f"{dataset_id}/{dataset_id}_csv.zip",
-            content_type="application/zip",
-        )
     except Exception as e:
-        logger.warning(f"Failed to upload {csv_path} with error {e}")
+        logger.warning(f"Failed to zip {csv_path} with error {e}")
         return None
+    return _upload_file(
+        local_path=zip_file_path,
+        bucket_path=f"{dataset_id}/{dataset_id}_csv.zip",
+        content_type="application/zip",
+    )
 
 
 def _upload_xlsx(dataset_id: str, xlsx_path: str) -> Optional[str]:
-    try:
-        return _upload_file(
-            local_path=xlsx_path,
-            bucket_path=f"{dataset_id}/{dataset_id}.xlsx",
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # noqa: E501
-        )
-    except Exception as e:
-        logger.warning(f"Failed to upload {xlsx_path} with error {e}")
-        return None
+    return _upload_file(
+        local_path=xlsx_path,
+        bucket_path=f"{dataset_id}/{dataset_id}.xlsx",
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # noqa: E501
+    )
 
 
 def upload_files(

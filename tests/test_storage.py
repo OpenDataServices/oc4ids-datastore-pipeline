@@ -64,7 +64,7 @@ def test_upload_files_json(mock_client: MagicMock) -> None:
     assert xlsx_public_url is None
 
 
-def test_upload_files_json_catches_exception(mock_client: MagicMock) -> None:
+def test_upload_files_json_catches_upload_exception(mock_client: MagicMock) -> None:
     mock_client.upload_file.side_effect = [Exception("Mock exception"), None, None]
 
     with tempfile.TemporaryDirectory() as csv_dir:
@@ -105,7 +105,25 @@ def test_upload_files_csv(mock_client: MagicMock) -> None:
     assert xlsx_public_url is None
 
 
-def test_upload_files_csv_catches_exception(mock_client: MagicMock) -> None:
+def test_upload_files_csv_catches_zip_exception() -> None:
+    json_public_url, csv_public_url, xlsx_public_url = upload_files(
+        "test_dataset",
+        json_path="data/test_dataset/test_dataset.json",
+        csv_path="non/existent/directory",
+        xlsx_path="data/test_dataset/test_dataset.xlsx",
+    )
+    assert (
+        json_public_url
+        == "https://test-bucket.test-region.digitaloceanspaces.com/test_dataset/test_dataset.json"  # noqa: E501
+    )
+    assert csv_public_url is None
+    assert (
+        xlsx_public_url
+        == "https://test-bucket.test-region.digitaloceanspaces.com/test_dataset/test_dataset.xlsx"  # noqa: E501
+    )
+
+
+def test_upload_files_csv_catches_upload_exception(mock_client: MagicMock) -> None:
     mock_client.upload_file.side_effect = [None, Exception("Mock exception"), None]
 
     with tempfile.TemporaryDirectory() as csv_dir:
@@ -148,7 +166,7 @@ def test_upload_files_xlsx(mock_client: MagicMock) -> None:
     )
 
 
-def test_upload_files_xlsx_catches_exception(mock_client: MagicMock) -> None:
+def test_upload_files_xlsx_catches_upload_exception(mock_client: MagicMock) -> None:
     mock_client.upload_file.side_effect = [None, None, Exception("Mock exception")]
 
     with tempfile.TemporaryDirectory() as csv_dir:
