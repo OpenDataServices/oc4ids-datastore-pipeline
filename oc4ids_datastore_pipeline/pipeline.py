@@ -7,7 +7,6 @@ from typing import Any, Optional
 
 import flattentool
 import requests
-from dotenv import load_dotenv
 from libcoveoc4ids.api import oc4ids_json_output
 
 from oc4ids_datastore_pipeline.database import (
@@ -149,5 +148,4 @@ def process_registry() -> None:
 
 
 def run() -> None:
-    load_dotenv()
     process_registry()

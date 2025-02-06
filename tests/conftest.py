@@ -1,3 +1,3 @@
-from dotenv import find_dotenv, load_dotenv
+import os
 
-load_dotenv(find_dotenv(".env.test"))
+os.environ["APP_ENV"] = "test"
