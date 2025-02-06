@@ -10,8 +10,6 @@ import botocore
 logger = logging.getLogger(__name__)
 
 
-# TODO:
-ENABLE_UPLOAD = os.environ.get("ENABLE_UPLOAD", "0")
 BUCKET_REGION = os.environ.get("BUCKET_REGION")
 BUCKET_NAME = os.environ.get("BUCKET_NAME")
 BUCKET_ACCESS_KEY_ID = os.environ.get("BUCKET_ACCESS_KEY_ID")
@@ -30,8 +28,7 @@ def _get_client() -> Any:
     )
 
 
-def upload_file(local_path: str, content_type: str) -> str:
-    bucket_path = os.path.relpath(local_path, "data")
+def _upload_file(local_path: str, bucket_path: str, content_type: str) -> str:
     logger.info(f"Uploading file {local_path}")
     client = _get_client()
     client.upload_file(
@@ -40,49 +37,65 @@ def upload_file(local_path: str, content_type: str) -> str:
         bucket_path,
         ExtraArgs={"ACL": "public-read", "ContentType": content_type},
     )
-    return (
+    public_url = (
         f"https://{BUCKET_NAME}.{BUCKET_REGION}.digitaloceanspaces.com/" + bucket_path
     )
+    logger.info(f"Uploaded to {public_url}")
+    return public_url
 
 
-def upload_json(json_path: str) -> str:
-    return upload_file(json_path, content_type="application/json")
+def _upload_json(dataset_id: str, json_path: str) -> Optional[str]:
+    try:
+        return _upload_file(
+            local_path=json_path,
+            bucket_path=f"{dataset_id}/{dataset_id}.json",
+            content_type="application/json",
+        )
+    except Exception as e:
+        logger.warning(f"Failed to upload {json_path} with error {e}")
+        return None
 
 
-def upload_csv(csv_path: str) -> str:
-    directory = Path(csv_path)
-    zip_file_path = f"{csv_path}_csv.zip"
-    with zipfile.ZipFile(zip_file_path, mode="w") as archive:
-        for file_path in directory.rglob("*"):
-            archive.write(file_path, arcname=file_path.relative_to(directory))
-    return upload_file(zip_file_path, content_type="application/zip")
+def _upload_csv(dataset_id: str, csv_path: str) -> Optional[str]:
+    try:
+        directory = Path(csv_path)
+        zip_file_path = f"{csv_path}_csv.zip"
+        with zipfile.ZipFile(zip_file_path, mode="w") as archive:
+            for file_path in directory.rglob("*"):
+                archive.write(file_path, arcname=file_path.relative_to(directory))
+        return _upload_file(
+            local_path=zip_file_path,
+            bucket_path=f"{dataset_id}/{dataset_id}_csv.zip",
+            content_type="application/zip",
+        )
+    except Exception as e:
+        logger.warning(f"Failed to upload {csv_path} with error {e}")
+        return None
 
 
-def upload_xlsx(xlsx_path: str) -> str:
-    return upload_file(
-        xlsx_path,
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # noqa: E501
-    )
+def _upload_xlsx(dataset_id: str, xlsx_path: str) -> Optional[str]:
+    try:
+        return _upload_file(
+            local_path=xlsx_path,
+            bucket_path=f"{dataset_id}/{dataset_id}.xlsx",
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # noqa: E501
+        )
+    except Exception as e:
+        logger.warning(f"Failed to upload {xlsx_path} with error {e}")
+        return None
 
 
 def upload_files(
+    dataset_id: str,
     json_path: Optional[str] = None,
     csv_path: Optional[str] = None,
     xlsx_path: Optional[str] = None,
 ) -> tuple[Optional[str], Optional[str], Optional[str]]:
     # TODO: Option to delete local files once uploaded?
-    # TODO: Exception handling
-    if not bool(int(ENABLE_UPLOAD)):
+    if not bool(int(os.environ.get("ENABLE_UPLOAD", "0"))):
         logger.info("Upload is disabled, skipping")
         return None, None, None
-    logger.info("Uploading files")
-    if json_path:
-        json_public_url = upload_json(json_path)
-        logger.info(f"Uploaded JSON file to {json_public_url}")
-    if csv_path:
-        csv_public_url = upload_csv(csv_path)
-        logger.info(f"Uploaded CSV zip file to {csv_public_url}")
-    if xlsx_path:
-        xlsx_public_url = upload_xlsx(xlsx_path)
-        logger.info(f"Uploaded XLSX file to {xlsx_public_url}")
+    json_public_url = _upload_json(dataset_id, json_path) if json_path else None
+    csv_public_url = _upload_csv(dataset_id, csv_path) if csv_path else None
+    xlsx_public_url = _upload_xlsx(dataset_id, xlsx_path) if xlsx_path else None
     return json_public_url, csv_public_url, xlsx_public_url

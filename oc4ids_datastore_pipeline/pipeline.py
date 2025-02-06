@@ -7,6 +7,7 @@ from typing import Any, Optional
 
 import flattentool
 import requests
+from dotenv import load_dotenv
 from libcoveoc4ids.api import oc4ids_json_output
 
 from oc4ids_datastore_pipeline.database import (
@@ -116,7 +117,7 @@ def process_dataset(dataset_name: str, dataset_url: str) -> None:
         )
         csv_path, xlsx_path = transform_to_csv_and_xlsx(json_path)
         json_public_url, csv_public_url, xlsx_public_url = upload_files(
-            json_path=json_path, csv_path=csv_path, xlsx_path=xlsx_path
+            dataset_name, json_path=json_path, csv_path=csv_path, xlsx_path=xlsx_path
         )
         save_dataset_metadata(
             dataset_name=dataset_name,
@@ -148,4 +149,5 @@ def process_registry() -> None:
 
 
 def run() -> None:
+    load_dotenv()
     process_registry()
