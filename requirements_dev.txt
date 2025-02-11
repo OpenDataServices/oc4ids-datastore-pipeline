@@ -42,7 +42,9 @@ flake8==7.1.1
 flake8-pyproject==1.2.3
     # via oc4ids-datastore-pipeline (pyproject.toml)
 flattentool==0.27.0
-    # via libcove
+    # via
+    #   libcove
+    #   oc4ids-datastore-pipeline (pyproject.toml)
 idna==3.10
     # via requests
 ijson==3.3.0

@@ -2,8 +2,10 @@ import datetime
 import json
 import logging
 import os
-from typing import Any
+from pathlib import Path
+from typing import Any, Optional
 
+import flattentool
 import requests
 from libcoveoc4ids.api import oc4ids_json_output
 
@@ -52,8 +54,33 @@ def write_json_to_file(file_name: str, json_data: dict[str, Any]) -> str:
         raise Exception("Error while writing to JSON file", e)
 
 
+def transform_to_csv_and_xlsx(json_path: str) -> tuple[Optional[str], Optional[str]]:
+    logger.info(f"Transforming {json_path}")
+    try:
+        path = Path(json_path)
+        flattentool.flatten(
+            json_path,
+            output_name=str(path.parent / path.stem),
+            root_list_path="projects",
+            main_sheet_name="projects",
+        )  # type: ignore[no-untyped-call]
+        csv_path = str(path.parent / path.stem)
+        xlsx_path = f"{path.parent / path.stem}.xlsx"
+        logger.info(f"Transformed to CSV at {csv_path}")
+        logger.info(f"Transformed to XLSX at {xlsx_path}")
+        return csv_path, xlsx_path
+    except Exception as e:
+        logger.warning(f"Failed to transform JSON to CSV and XLSX with error {e}")
+        return None, None
+
+
 def save_dataset_metadata(
-    dataset_name: str, source_url: str, json_data: dict[str, Any], json_url: str
+    dataset_name: str,
+    source_url: str,
+    json_data: dict[str, Any],
+    json_url: str,
+    csv_url: Optional[str],
+    xlsx_url: Optional[str],
 ) -> None:
     logger.info(f"Saving metadata for dataset {dataset_name}")
     publisher_name = json_data.get("publisher", {}).get("name", "")
@@ -66,6 +93,8 @@ def save_dataset_metadata(
         license_url=license_url,
         license_name=license_name,
         json_url=json_url,
+        csv_url=csv_url,
+        xlsx_url=xlsx_url,
         updated_at=datetime.datetime.now(datetime.UTC),
     )
     save_dataset(dataset)
@@ -76,12 +105,17 @@ def process_dataset(dataset_name: str, dataset_url: str) -> None:
     try:
         json_data = download_json(dataset_url)
         validate_json(dataset_name, json_data)
-        json_url = write_json_to_file(f"data/{dataset_name}.json", json_data)
+        json_path = write_json_to_file(
+            f"data/{dataset_name}/{dataset_name}.json", json_data
+        )
+        csv_path, xlsx_path = transform_to_csv_and_xlsx(json_path)
         save_dataset_metadata(
             dataset_name=dataset_name,
             source_url=dataset_url,
             json_data=json_data,
-            json_url=json_url,
+            json_url=json_path,
+            csv_url=csv_path,
+            xlsx_url=xlsx_path,
         )
         logger.info(f"Processed dataset {dataset_name}")
     except Exception as e:
