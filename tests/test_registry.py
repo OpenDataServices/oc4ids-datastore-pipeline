@@ -38,6 +38,20 @@ def test_fetch_registered_datasets_raises_failure_exception(
     assert "Mocked exception" in str(exc_info.value)
 
 
+def test_fetch_registered_datasets_raises_exception_when_no_datasets(
+    mocker: MockerFixture,
+) -> None:
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"records": {}}
+    patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
+    patch_get.return_value = mock_response
+
+    with pytest.raises(Exception) as exc_info:
+        fetch_registered_datasets()
+
+    assert "Zero datasets returned from registry" in str(exc_info.value)
+
+
 def test_fetch_license_mappings(mocker: MockerFixture) -> None:
     mock_response = MagicMock()
     mock_response.json.return_value = {
