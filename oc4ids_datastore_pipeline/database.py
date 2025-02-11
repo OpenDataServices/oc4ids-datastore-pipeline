@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+from typing import Optional
 
 from sqlalchemy import (
     DateTime,
@@ -25,6 +26,8 @@ class Dataset(Base):
     dataset_id: Mapped[str] = mapped_column(String, primary_key=True)
     source_url: Mapped[str] = mapped_column(String)
     publisher_name: Mapped[str] = mapped_column(String)
+    license_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    license_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     json_url: Mapped[str] = mapped_column(String)
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
 

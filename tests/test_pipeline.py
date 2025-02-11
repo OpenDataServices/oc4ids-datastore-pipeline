@@ -1,46 +1,16 @@
 import os
 import tempfile
 from textwrap import dedent
-from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
 
 from oc4ids_datastore_pipeline.pipeline import (
     download_json,
-    fetch_registered_datasets,
     process_dataset,
     validate_json,
     write_json_to_file,
 )
-
-
-def test_fetch_registered_datasets(mocker: MockerFixture) -> None:
-    mock_response = MagicMock()
-    mock_response.json.return_value = {
-        "records": {
-            "test_dataset": {"fields": {"url": {"value": "https://test_dataset.json"}}}
-        }
-    }
-    patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
-    patch_get.return_value = mock_response
-
-    result = fetch_registered_datasets()
-
-    assert result == {"test_dataset": "https://test_dataset.json"}
-
-
-def test_fetch_registered_datasets_raises_failure_exception(
-    mocker: MockerFixture,
-) -> None:
-    patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
-    patch_get.side_effect = Exception("Mocked exception")
-
-    with pytest.raises(Exception) as exc_info:
-        fetch_registered_datasets()
-
-    assert "Failed to fetch datasets list from registry" in str(exc_info.value)
-    assert "Mocked exception" in str(exc_info.value)
 
 
 def test_download_json_raises_failure_exception(mocker: MockerFixture) -> None:
