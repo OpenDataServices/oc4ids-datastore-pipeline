@@ -8,8 +8,11 @@ description = "OC4IDS Datastore Pipeline"
 version = "0.1.0"
 readme = "README.md"
 dependencies = [
+  "alembic",
   "libcoveoc4ids",
+  "psycopg2",
   "requests",
+  "sqlalchemy",
 ]
 
 [project.optional-dependencies]

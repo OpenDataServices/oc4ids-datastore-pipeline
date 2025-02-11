@@ -7,6 +7,7 @@ A Python application to validate and store published OC4IDS datasets.
 ### Prerequisites
 
 - Python 3.12
+- Postgres
 
 ### Install Python requirements
 
@@ -14,6 +15,18 @@ A Python application to validate and store published OC4IDS datasets.
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements_dev.txt
+```
+
+### Set database enrivonment variable
+
+```
+export DATABASE_URL="postgresql://oc4ids_datastore@localhost/oc4ids_datastore"
+```
+
+### Run database migrations
+
+```
+alembic upgrade head
 ```
 
 ### Run app
@@ -36,4 +49,10 @@ mypy oc4ids_datastore_pipeline/ tests/
 
 ```
 pytest
+```
+
+### Generating new database migrations
+
+```
+alembic revision --autogenerate -m "<MESSAGE HERE>"
 ```
