@@ -9,6 +9,7 @@ version = "0.1.0"
 readme = "README.md"
 dependencies = [
   "alembic",
+  "boto3",
   "flattentool",
   "libcoveoc4ids",
   "psycopg2",
@@ -25,6 +26,8 @@ dev = [
   "mypy",
   "pytest",
   "pytest-mock",
+  "python-dotenv",
+  "types-boto3",
   "types-requests",
 ]
 

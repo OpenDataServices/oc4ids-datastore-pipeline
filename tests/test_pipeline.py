@@ -111,11 +111,15 @@ def test_process_deleted_datasets(mocker: MockerFixture) -> None:
     patch_delete_dataset = mocker.patch(
         "oc4ids_datastore_pipeline.pipeline.delete_dataset"
     )
+    patch_delete_files_for_dataset = mocker.patch(
+        "oc4ids_datastore_pipeline.pipeline.delete_files_for_dataset"
+    )
 
     registered_datasets = {"test_dataset": "https://test_dataset.json"}
     process_deleted_datasets(registered_datasets)
 
     patch_delete_dataset.assert_called_once_with("old_dataset")
+    patch_delete_files_for_dataset.assert_called_once_with("old_dataset")
 
 
 def test_process_dataset_catches_exception(mocker: MockerFixture) -> None:
