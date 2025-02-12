@@ -13,6 +13,7 @@ dependencies = [
   "flattentool",
   "libcoveoc4ids",
   "psycopg2",
+  "python-dotenv",
   "requests",
   "sqlalchemy",
 ]
@@ -26,7 +27,6 @@ dev = [
   "mypy",
   "pytest",
   "pytest-mock",
-  "python-dotenv",
   "types-boto3",
   "types-requests",
 ]

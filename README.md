@@ -71,3 +71,7 @@ pytest
 ```
 alembic revision --autogenerate -m "<MESSAGE HERE>"
 ```
+
+## Releasing
+
+To publish a new version, raise a PR to `main` updating the version in `pyproject.toml`. Once merged, create a git tag and GitHub release for the new version, with naming `vX.Y.Z`. This will trigger a docker image to to be built and pushed, tagged with the version and `latest`.

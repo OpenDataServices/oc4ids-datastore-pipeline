@@ -145,6 +145,7 @@ def process_registry() -> None:
     process_deleted_datasets(registered_datasets)
     for name, url in registered_datasets.items():
         process_dataset(name, url)
+    logger.info("Finished processing all datasets")
 
 
 def run() -> None:
