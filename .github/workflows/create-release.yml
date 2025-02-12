@@ -1,4 +1,4 @@
-name: Create tag
+name: Create GitHub release
 
 on:
   push:
@@ -6,8 +6,10 @@ on:
       - live
 
 jobs:
-  create-tag:
+  create-release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,3 +27,9 @@ jobs:
         run: |
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
+      - name: Create release
+        run: |
+          gh release create "v${VERSION}" \
+            --repo="${GITHUB_REPOSITORY}" \
+            --title="v${VERSION}" \
+            --generate-notes
