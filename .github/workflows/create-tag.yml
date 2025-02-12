@@ -1,0 +1,27 @@
+name: Create tag
+
+on:
+  push:
+    branches:
+      - live
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install local package
+        run: pip install .
+      - name: Extract version
+        run: |
+          VERSION=$(python -c "import importlib.metadata; print(importlib.metadata.version('oc4ids-datastore-pipeline'))")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Print version
+        run: echo $VERSION
+      - name: Create tag
+        run: |
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
