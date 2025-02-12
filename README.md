@@ -71,3 +71,8 @@ pytest
 ```
 alembic revision --autogenerate -m "<MESSAGE HERE>"
 ```
+
+## Releasing
+
+On merge to `live`, a tag will be created using the version in `pyproject.toml`,
+which will then trigger a docker image build.
