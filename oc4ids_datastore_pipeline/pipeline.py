@@ -9,7 +9,12 @@ import flattentool
 import requests
 from libcoveoc4ids.api import oc4ids_json_output
 
-from oc4ids_datastore_pipeline.database import Dataset, save_dataset
+from oc4ids_datastore_pipeline.database import (
+    Dataset,
+    delete_dataset,
+    get_dataset_ids,
+    save_dataset,
+)
 from oc4ids_datastore_pipeline.registry import (
     fetch_registered_datasets,
     get_license_name_from_url,
@@ -122,11 +127,20 @@ def process_dataset(dataset_name: str, dataset_url: str) -> None:
         logger.warning(f"Failed to process dataset {dataset_name} with error {e}")
 
 
-def process_datasets() -> None:
+def process_deleted_datasets(registered_datasets: dict[str, str]) -> None:
+    stored_datasets = get_dataset_ids()
+    deleted_datasets = stored_datasets - registered_datasets.keys()
+    for dataset_id in deleted_datasets:
+        logger.info(f"Dataset {dataset_id} is no longer in the registry, deleting")
+        delete_dataset(dataset_id)
+
+
+def process_registry() -> None:
     registered_datasets = fetch_registered_datasets()
+    process_deleted_datasets(registered_datasets)
     for name, url in registered_datasets.items():
         process_dataset(name, url)
 
 
 def run() -> None:
-    process_datasets()
+    process_registry()

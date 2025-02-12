@@ -22,9 +22,13 @@ def fetch_registered_datasets() -> dict[str, str]:
         }
         registered_datasets_count = len(registered_datasets)
         logger.info(f"Fetched URLs for {registered_datasets_count} datasets")
-        return registered_datasets
     except Exception as e:
         raise Exception("Failed to fetch datasets list from registry", e)
+    if registered_datasets_count < 1:
+        raise Exception(
+            "Zero datasets returned from registry, likely an upstream error"
+        )
+    return registered_datasets
 
 
 def fetch_license_mappings() -> dict[str, str]:
