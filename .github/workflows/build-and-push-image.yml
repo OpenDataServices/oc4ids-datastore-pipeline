@@ -1,5 +1,9 @@
-name: CI
-on: [push]
+name: Build and push image
+
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build-and-push-image:
@@ -14,10 +18,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract version
+        run: |
+          TAG=${GITHUB_REF#refs/*/}
+          echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+      - name: Print version
+        run: echo $VERSION
       - name: Build and push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           echo $IMAGE_ID
-          docker build . -t ${IMAGE_ID}
-          docker push ${IMAGE_ID}:latest
+          docker build . -t ${IMAGE_ID}:${VERSION} -t ${IMAGE_ID}:latest
+          docker push --all-tags ${IMAGE_ID}
