@@ -33,7 +33,7 @@ def test_validate_json_raises_failure_exception(mocker: MockerFixture) -> None:
     patch_oc4ids_json_output.side_effect = Exception("Mocked exception")
 
     with pytest.raises(Exception) as exc_info:
-        validate_json(dataset_name="test_dataset", json_data={})
+        validate_json(dataset_id="test_dataset", json_data={})
 
     assert "Validation failed" in str(exc_info.value)
     assert "Mocked exception" in str(exc_info.value)
@@ -48,7 +48,7 @@ def test_validate_json_raises_validation_errors_exception(
     patch_oc4ids_json_output.return_value = {"validation_errors_count": 2}
 
     with pytest.raises(Exception) as exc_info:
-        validate_json(dataset_name="test_dataset", json_data={})
+        validate_json(dataset_id="test_dataset", json_data={})
 
     assert "Validation failed" in str(exc_info.value)
     assert "Dataset has 2 validation errors" in str(exc_info.value)
