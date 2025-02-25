@@ -18,7 +18,7 @@ from oc4ids_datastore_pipeline.database import (
 from oc4ids_datastore_pipeline.notifications import send_notification
 from oc4ids_datastore_pipeline.registry import (
     fetch_registered_datasets,
-    get_license_name_from_url,
+    get_license_title_from_url,
 )
 from oc4ids_datastore_pipeline.storage import delete_files_for_dataset, upload_files
 
@@ -108,13 +108,13 @@ def save_dataset_metadata(
     try:
         publisher_name = json_data.get("publisher", {}).get("name", "")
         license_url = json_data.get("license", None)
-        license_name = get_license_name_from_url(license_url) if license_url else None
+        license_title = get_license_title_from_url(license_url) if license_url else None
         dataset = Dataset(
             dataset_id=dataset_id,
             source_url=source_url,
             publisher_name=publisher_name,
             license_url=license_url,
-            license_name=license_name,
+            license_title=license_title,
             json_url=json_url,
             csv_url=csv_url,
             xlsx_url=xlsx_url,

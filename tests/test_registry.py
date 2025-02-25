@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 from oc4ids_datastore_pipeline.registry import (
     fetch_license_mappings,
     fetch_registered_datasets,
-    get_license_name_from_url,
+    get_license_title_from_url,
 )
 
 
@@ -116,7 +116,7 @@ def test_fetch_license_mappings_catches_exception(
     assert result == {}
 
 
-def test_get_license_name_from_url(mocker: MockerFixture) -> None:
+def test_get_license_title_from_url(mocker: MockerFixture) -> None:
     patch_license_mappings = mocker.patch(
         "oc4ids_datastore_pipeline.registry.fetch_license_mappings"
     )
@@ -125,14 +125,14 @@ def test_get_license_name_from_url(mocker: MockerFixture) -> None:
         "https://license_2.com/license": "License 2",
     }
 
-    license_name = get_license_name_from_url(
+    license_title = get_license_title_from_url(
         "https://license_2.com/license", force_refresh=True
     )
 
-    assert license_name == "License 2"
+    assert license_title == "License 2"
 
 
-def test_get_license_name_from_url_not_in_mapping(mocker: MockerFixture) -> None:
+def test_get_license_title_from_url_not_in_mapping(mocker: MockerFixture) -> None:
     patch_license_mappings = mocker.patch(
         "oc4ids_datastore_pipeline.registry.fetch_license_mappings"
     )
@@ -140,8 +140,8 @@ def test_get_license_name_from_url_not_in_mapping(mocker: MockerFixture) -> None
         "https://license_1.com/license": "License 1",
     }
 
-    license_name = get_license_name_from_url(
+    license_title = get_license_title_from_url(
         "https://license_2.com/license", force_refresh=True
     )
 
-    assert license_name is None
+    assert license_title is None

@@ -50,7 +50,7 @@ def fetch_license_mappings() -> dict[str, str]:
         return {}
 
 
-def get_license_name_from_url(
+def get_license_title_from_url(
     url: str, force_refresh: Optional[bool] = False
 ) -> Optional[str]:
     global _license_mappings
