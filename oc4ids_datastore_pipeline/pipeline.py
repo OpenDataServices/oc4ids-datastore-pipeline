@@ -15,6 +15,7 @@ from oc4ids_datastore_pipeline.database import (
     get_dataset_ids,
     save_dataset,
 )
+from oc4ids_datastore_pipeline.notifications import send_notification
 from oc4ids_datastore_pipeline.registry import (
     fetch_registered_datasets,
     get_license_name_from_url,
@@ -165,11 +166,14 @@ def process_registry() -> None:
             process_dataset(dataset_id, url)
         except Exception as e:
             logger.warning(f"Failed to process dataset {dataset_id} with error {e}")
-            errors.append({"dataset": dataset_id, "source_url": url, "errors": str(e)})
+            errors.append(
+                {"dataset_id": dataset_id, "source_url": url, "message": str(e)}
+            )
     if errors:
         logger.error(
             f"Errors while processing registry: {json.dumps(errors, indent=4)}"
         )
+        send_notification(errors)
     logger.info("Finished processing all datasets")
 
 

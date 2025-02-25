@@ -163,5 +163,6 @@ def test_process_registry_catches_exception(mocker: MockerFixture) -> None:
         "oc4ids_datastore_pipeline.pipeline.process_dataset"
     )
     patch_process_dataset.side_effect = Exception("Mocked exception")
+    mocker.patch("oc4ids_datastore_pipeline.pipeline.send_notification")
 
     process_registry()
