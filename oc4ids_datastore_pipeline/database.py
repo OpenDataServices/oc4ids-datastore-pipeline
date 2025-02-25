@@ -30,6 +30,7 @@ class Dataset(Base):
     publisher_name: Mapped[str] = mapped_column(String)
     license_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     license_title: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    license_title_short: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     json_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     csv_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     xlsx_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)

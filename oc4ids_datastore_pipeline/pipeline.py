@@ -108,13 +108,16 @@ def save_dataset_metadata(
     try:
         publisher_name = json_data.get("publisher", {}).get("name", "")
         license_url = json_data.get("license", None)
-        license_title = get_license_title_from_url(license_url) if license_url else None
+        license_title, license_title_short = (
+            get_license_title_from_url(license_url) if license_url else (None, None)
+        )
         dataset = Dataset(
             dataset_id=dataset_id,
             source_url=source_url,
             publisher_name=publisher_name,
             license_url=license_url,
             license_title=license_title,
+            license_title_short=license_title_short,
             json_url=json_url,
             csv_url=csv_url,
             xlsx_url=xlsx_url,
