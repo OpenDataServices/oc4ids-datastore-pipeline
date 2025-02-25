@@ -6,9 +6,11 @@ import pytest
 from pytest_mock import MockerFixture
 
 from oc4ids_datastore_pipeline.pipeline import (
+    ProcessDatasetError,
     download_json,
     process_dataset,
     process_deleted_datasets,
+    process_registry,
     transform_to_csv_and_xlsx,
     validate_json,
     write_json_to_file,
@@ -19,7 +21,7 @@ def test_download_json_raises_failure_exception(mocker: MockerFixture) -> None:
     patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
     patch_get.side_effect = Exception("Mocked exception")
 
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(ProcessDatasetError) as exc_info:
         download_json(url="https://test_dataset.json")
 
     assert "Download failed" in str(exc_info.value)
@@ -32,7 +34,7 @@ def test_validate_json_raises_failure_exception(mocker: MockerFixture) -> None:
     )
     patch_oc4ids_json_output.side_effect = Exception("Mocked exception")
 
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(ProcessDatasetError) as exc_info:
         validate_json(dataset_id="test_dataset", json_data={})
 
     assert "Validation failed" in str(exc_info.value)
@@ -45,13 +47,28 @@ def test_validate_json_raises_validation_errors_exception(
     patch_oc4ids_json_output = mocker.patch(
         "oc4ids_datastore_pipeline.pipeline.oc4ids_json_output"
     )
-    patch_oc4ids_json_output.return_value = {"validation_errors_count": 2}
+    patch_oc4ids_json_output.return_value = {
+        "validation_errors_count": 2,
+        "validation_errors": [
+            [
+                '{"message": "Non-unique id values"}',
+                [
+                    {
+                        "path": "projects/22/parties",
+                        "value": "test_value",
+                    },
+                    {"path": "projects/30/parties", "value": "test_value"},
+                ],
+            ]
+        ],
+    }
 
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(ProcessDatasetError) as exc_info:
         validate_json(dataset_id="test_dataset", json_data={})
 
     assert "Validation failed" in str(exc_info.value)
     assert "Dataset has 2 validation errors" in str(exc_info.value)
+    assert "Non-unique id values" in str(exc_info.value)
 
 
 def test_write_json_to_file_writes_in_correct_format() -> None:
@@ -73,13 +90,13 @@ def test_write_json_to_file_raises_failure_exception(mocker: MockerFixture) -> N
     patch_json_dump = mocker.patch("oc4ids_datastore_pipeline.pipeline.json.dump")
     patch_json_dump.side_effect = Exception("Mocked exception")
 
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(ProcessDatasetError) as exc_info:
         with tempfile.TemporaryDirectory() as dir:
             file_name = os.path.join(dir, "test_dataset.json")
             write_json_to_file(file_name=file_name, json_data={"key": "value"})
 
-            assert "Error while writing to JSON file" in str(exc_info.value)
-            assert "Mocked exception" in str(exc_info.value)
+    assert "Error writing dataset to file" in str(exc_info.value)
+    assert "Mocked exception" in str(exc_info.value)
 
 
 def test_transform_to_csv_and_xlsx_returns_correct_paths(mocker: MockerFixture) -> None:
@@ -122,10 +139,29 @@ def test_process_deleted_datasets(mocker: MockerFixture) -> None:
     patch_delete_files_for_dataset.assert_called_once_with("old_dataset")
 
 
-def test_process_dataset_catches_exception(mocker: MockerFixture) -> None:
+def test_process_dataset_raises_failure_exception(mocker: MockerFixture) -> None:
     patch_download_json = mocker.patch(
         "oc4ids_datastore_pipeline.pipeline.download_json"
     )
-    patch_download_json.side_effect = Exception("Download failed")
+    patch_download_json.side_effect = ProcessDatasetError("Download failed: Exception")
 
-    process_dataset("test_dataset", "https://test_dataset.json")
+    with pytest.raises(ProcessDatasetError) as exc_info:
+        process_dataset("test_dataset", "https://test_dataset.json")
+
+    assert "Download failed: Exception" in str(exc_info.value)
+
+
+def test_process_registry_catches_exception(mocker: MockerFixture) -> None:
+    patch_fetch_registered_datasets = mocker.patch(
+        "oc4ids_datastore_pipeline.pipeline.fetch_registered_datasets"
+    )
+    patch_fetch_registered_datasets.return_value = {
+        "test_dataset": "https://test_dataset.json"
+    }
+    mocker.patch("oc4ids_datastore_pipeline.pipeline.process_deleted_datasets")
+    patch_process_dataset = mocker.patch(
+        "oc4ids_datastore_pipeline.pipeline.process_dataset"
+    )
+    patch_process_dataset.side_effect = Exception("Mocked exception")
+
+    process_registry()

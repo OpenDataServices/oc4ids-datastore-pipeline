@@ -24,6 +24,17 @@ from oc4ids_datastore_pipeline.storage import delete_files_for_dataset, upload_f
 logger = logging.getLogger(__name__)
 
 
+class ProcessDatasetError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ValidationError(ProcessDatasetError):
+    def __init__(self, errors_count: int, errors: list[str]):
+        message = f"Dataset has {errors_count} validation errors: {str(errors)}"
+        super().__init__(message)
+
+
 def download_json(url: str) -> Any:
     logger.info(f"Downloading json from {url}")
     try:
@@ -33,7 +44,7 @@ def download_json(url: str) -> Any:
         logger.info(f"Downloaded {url} ({response_size} bytes)")
         return r.json()
     except Exception as e:
-        raise Exception("Download failed", e)
+        raise ProcessDatasetError(f"Download failed: {str(e)}")
 
 
 def validate_json(dataset_id: str, json_data: dict[str, Any]) -> None:
@@ -41,11 +52,15 @@ def validate_json(dataset_id: str, json_data: dict[str, Any]) -> None:
     try:
         validation_result = oc4ids_json_output(json_data=json_data)
         validation_errors_count = validation_result["validation_errors_count"]
+        validation_errors = validation_result["validation_errors"]
         if validation_errors_count > 0:
-            raise Exception(f"Dataset has {validation_errors_count} validation errors")
+            raise ValidationError(
+                errors_count=validation_errors_count,
+                errors=validation_errors,
+            )
         logger.info(f"Dataset {dataset_id} is valid")
     except Exception as e:
-        raise Exception("Validation failed", e)
+        raise ProcessDatasetError(f"Validation failed: {str(e)}")
 
 
 def write_json_to_file(file_name: str, json_data: dict[str, Any]) -> str:
@@ -57,7 +72,7 @@ def write_json_to_file(file_name: str, json_data: dict[str, Any]) -> str:
         logger.info(f"Finished writing to {file_name}")
         return file_name
     except Exception as e:
-        raise Exception("Error while writing to JSON file", e)
+        raise ProcessDatasetError(f"Error writing dataset to file: {e}")
 
 
 def transform_to_csv_and_xlsx(json_path: str) -> tuple[Optional[str], Optional[str]]:
@@ -76,7 +91,7 @@ def transform_to_csv_and_xlsx(json_path: str) -> tuple[Optional[str], Optional[s
         logger.info(f"Transformed to XLSX at {xlsx_path}")
         return csv_path, xlsx_path
     except Exception as e:
-        logger.warning(f"Failed to transform JSON to CSV and XLSX with error {e}")
+        logger.warning(f"Failed to transform JSON to CSV and XLSX: {e}")
         return None, None
 
 
@@ -89,46 +104,47 @@ def save_dataset_metadata(
     xlsx_url: Optional[str],
 ) -> None:
     logger.info(f"Saving metadata for dataset {dataset_id}")
-    publisher_name = json_data.get("publisher", {}).get("name", "")
-    license_url = json_data.get("license", None)
-    license_name = get_license_name_from_url(license_url) if license_url else None
-    dataset = Dataset(
-        dataset_id=dataset_id,
-        source_url=source_url,
-        publisher_name=publisher_name,
-        license_url=license_url,
-        license_name=license_name,
-        json_url=json_url,
-        csv_url=csv_url,
-        xlsx_url=xlsx_url,
-        updated_at=datetime.datetime.now(datetime.UTC),
-    )
-    save_dataset(dataset)
+    try:
+        publisher_name = json_data.get("publisher", {}).get("name", "")
+        license_url = json_data.get("license", None)
+        license_name = get_license_name_from_url(license_url) if license_url else None
+        dataset = Dataset(
+            dataset_id=dataset_id,
+            source_url=source_url,
+            publisher_name=publisher_name,
+            license_url=license_url,
+            license_name=license_name,
+            json_url=json_url,
+            csv_url=csv_url,
+            xlsx_url=xlsx_url,
+            updated_at=datetime.datetime.now(datetime.UTC),
+        )
+        save_dataset(dataset)
+    except Exception as e:
+        raise ProcessDatasetError(f"Failed to update metadata for dataset: {e}")
 
 
 def process_dataset(dataset_id: str, source_url: str) -> None:
     logger.info(f"Processing dataset {dataset_id}")
-    try:
-        json_data = download_json(source_url)
-        validate_json(dataset_id, json_data)
-        json_path = write_json_to_file(
-            f"data/{dataset_id}/{dataset_id}.json", json_data
-        )
-        csv_path, xlsx_path = transform_to_csv_and_xlsx(json_path)
-        json_public_url, csv_public_url, xlsx_public_url = upload_files(
-            dataset_id, json_path=json_path, csv_path=csv_path, xlsx_path=xlsx_path
-        )
-        save_dataset_metadata(
-            dataset_id=dataset_id,
-            source_url=source_url,
-            json_data=json_data,
-            json_url=json_public_url,
-            csv_url=csv_public_url,
-            xlsx_url=xlsx_public_url,
-        )
-        logger.info(f"Processed dataset {dataset_id}")
-    except Exception as e:
-        logger.warning(f"Failed to process dataset {dataset_id} with error {e}")
+    json_data = download_json(source_url)
+    validate_json(dataset_id, json_data)
+    json_path = write_json_to_file(
+        file_name=f"data/{dataset_id}/{dataset_id}.json",
+        json_data=json_data,
+    )
+    csv_path, xlsx_path = transform_to_csv_and_xlsx(json_path)
+    json_public_url, csv_public_url, xlsx_public_url = upload_files(
+        dataset_id, json_path=json_path, csv_path=csv_path, xlsx_path=xlsx_path
+    )
+    save_dataset_metadata(
+        dataset_id=dataset_id,
+        source_url=source_url,
+        json_data=json_data,
+        json_url=json_public_url,
+        csv_url=csv_public_url,
+        xlsx_url=xlsx_public_url,
+    )
+    logger.info(f"Processed dataset {dataset_id}")
 
 
 def process_deleted_datasets(registered_datasets: dict[str, str]) -> None:
@@ -143,8 +159,17 @@ def process_deleted_datasets(registered_datasets: dict[str, str]) -> None:
 def process_registry() -> None:
     registered_datasets = fetch_registered_datasets()
     process_deleted_datasets(registered_datasets)
+    errors: list[dict[str, Any]] = []
     for dataset_id, url in registered_datasets.items():
-        process_dataset(dataset_id, url)
+        try:
+            process_dataset(dataset_id, url)
+        except Exception as e:
+            logger.warning(f"Failed to process dataset {dataset_id} with error {e}")
+            errors.append({"dataset": dataset_id, "source_url": url, "errors": str(e)})
+    if errors:
+        logger.error(
+            f"Errors while processing registry: {json.dumps(errors, indent=4)}"
+        )
     logger.info("Finished processing all datasets")
 
 
