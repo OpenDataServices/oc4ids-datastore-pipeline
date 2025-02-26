@@ -21,13 +21,14 @@ def _send_email(errors: list[dict[str, str]]) -> None:
             context = ssl.create_default_context()
             server.starttls(context=context)
         message = MIMEMultipart()
-        message["Subject"] = "Errors in OC4IDS Datastore Pipeline run"
+        current_time = datetime.datetime.now(datetime.UTC)
+        message["Subject"] = f"Errors in OC4IDS Datastore Pipeline run: {current_time}"
         message["From"] = SENDER_EMAIL
         message["To"] = RECEIVER_EMAIL
 
         html = f"""\
         <h1>Errors in OC4IDS Datastore Pipeline run</h1>
-        <p>The pipeline completed at {datetime.datetime.now(datetime.UTC)}.</p>
+        <p>The pipeline completed at {current_time}.</p>
         <p>Please see errors for each dataset below:</p>
         {"".join([
             f"""
