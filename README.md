@@ -44,6 +44,17 @@ For local development, create a file called `.env.local`, which will be used by 
 You can change which file is loaded setting the environment variable `APP_ENV`.
 For example the tests set `APP_ENV=test`, which loads variables from `.env.test`.
 
+### Email notification environment variables
+
+To send failure notifications by email, the following environment variables must be set:
+
+- `NOTIFICATIONS_ENABLED`: 1 to enable, 0 to disable
+- `NOTIFICATIONS_SMTP_HOST`
+- `NOTIFICATIONS_SMTP_PORT`
+- `NOTIFICATIONS_SMTP_SSL_ENABLED`: 1 to enable, 0 to disable
+- `NOTIFICATIONS_SENDER_EMAIL`
+- `NOTIFICATIONS_RECEIVER_EMAIL`
+
 ### Run app
 
 ```
