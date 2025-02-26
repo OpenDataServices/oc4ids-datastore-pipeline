@@ -31,7 +31,7 @@ def fetch_registered_datasets() -> dict[str, str]:
     return registered_datasets
 
 
-def fetch_license_mappings() -> dict[str, str]:
+def fetch_license_mappings() -> dict[str, dict[str, Optional[str]]]:
     logger.info("Fetching license mappings from registry")
     try:
         url = "https://opendataservices.github.io/oc4ids-registry/datatig/type/license/records_api.json"  # noqa: E501
@@ -39,7 +39,10 @@ def fetch_license_mappings() -> dict[str, str]:
         r.raise_for_status()
         json_data = r.json()
         return {
-            urls["fields"]["url"]["value"]: license["fields"]["title"]["value"]
+            urls["fields"]["url"]["value"]: {
+                "title": license["fields"]["title"]["value"],
+                "title_short": license["fields"]["title_short"]["value"],
+            }
             for license in json_data["records"].values()
             for urls in license["fields"]["urls"]["values"]
         }
@@ -50,10 +53,11 @@ def fetch_license_mappings() -> dict[str, str]:
         return {}
 
 
-def get_license_name_from_url(
+def get_license_title_from_url(
     url: str, force_refresh: Optional[bool] = False
-) -> Optional[str]:
+) -> tuple[Optional[str], Optional[str]]:
     global _license_mappings
     if force_refresh or (_license_mappings is None):
         _license_mappings = fetch_license_mappings()
-    return _license_mappings.get(url, None)
+    license_titles = _license_mappings.get(url, {})
+    return license_titles.get("title"), license_titles.get("title_short")
