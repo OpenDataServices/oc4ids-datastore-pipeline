@@ -22,7 +22,7 @@ def test_download_json_raises_failure_exception(mocker: MockerFixture) -> None:
     patch_get.side_effect = Exception("Mocked exception")
 
     with pytest.raises(ProcessDatasetError) as exc_info:
-        download_json(url="https://test_dataset.json")
+        download_json(dataset_id="test_dataset", url="https://test_dataset.json")
 
     assert "Download failed" in str(exc_info.value)
     assert "Mocked exception" in str(exc_info.value)
