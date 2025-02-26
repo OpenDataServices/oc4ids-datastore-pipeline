@@ -36,10 +36,17 @@ class ValidationError(ProcessDatasetError):
         super().__init__(message)
 
 
-def download_json(url: str) -> Any:
+def download_json(dataset_id: str, url: str) -> Any:
     logger.info(f"Downloading json from {url}")
     try:
-        r = requests.get(url)
+        if dataset_id == "malawi_cost_malawi":
+            payload = {
+                "start_date": "2010-01-01",
+                "end_date": datetime.datetime.today().strftime("%Y-%m-%d"),
+            }
+            r = requests.post(url, json=payload)
+        else:
+            r = requests.get(url)
         r.raise_for_status()
         response_size = len(r.content)
         logger.info(f"Downloaded {url} ({response_size} bytes)")
@@ -130,7 +137,7 @@ def save_dataset_metadata(
 
 def process_dataset(dataset_id: str, source_url: str) -> None:
     logger.info(f"Processing dataset {dataset_id}")
-    json_data = download_json(source_url)
+    json_data = download_json(dataset_id, source_url)
     validate_json(dataset_id, json_data)
     json_path = write_json_to_file(
         file_name=f"data/{dataset_id}/{dataset_id}.json",
