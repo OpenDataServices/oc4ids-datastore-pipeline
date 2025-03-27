@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "oc4ids-datastore-pipeline"
 description = "OC4IDS Datastore Pipeline"
-version = "0.4.0"
+version = "0.5.0"
 readme = "README.md"
 dependencies = [
   "alembic",
@@ -50,3 +50,4 @@ follow_untyped_imports = true
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+pythonpath = ["."]

@@ -14,7 +14,12 @@ def test_fetch_registered_datasets(mocker: MockerFixture) -> None:
     mock_response = MagicMock()
     mock_response.json.return_value = {
         "records": {
-            "test_dataset": {"fields": {"url": {"value": "https://test_dataset.json"}}}
+            "test_dataset": {
+                "fields": {
+                    "url": {"value": "https://test_dataset.json"},
+                    "country": {"value": "ab"},
+                }
+            }
         }
     }
     patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
@@ -22,7 +27,9 @@ def test_fetch_registered_datasets(mocker: MockerFixture) -> None:
 
     result = fetch_registered_datasets()
 
-    assert result == {"test_dataset": "https://test_dataset.json"}
+    assert result == {
+        "test_dataset": {"source_url": "https://test_dataset.json", "country": "ab"}
+    }
 
 
 def test_fetch_registered_datasets_raises_failure_exception(

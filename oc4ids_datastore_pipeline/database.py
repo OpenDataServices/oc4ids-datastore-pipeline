@@ -28,6 +28,7 @@ class Dataset(Base):
     dataset_id: Mapped[str] = mapped_column(String, primary_key=True)
     source_url: Mapped[str] = mapped_column(String)
     publisher_name: Mapped[str] = mapped_column(String)
+    publisher_country: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     license_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     license_title: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     license_title_short: Mapped[Optional[str]] = mapped_column(String, nullable=True)

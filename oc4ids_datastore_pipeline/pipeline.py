@@ -106,6 +106,7 @@ def transform_to_csv_and_xlsx(json_path: str) -> tuple[Optional[str], Optional[s
 def save_dataset_metadata(
     dataset_id: str,
     source_url: str,
+    publisher_country: str,
     json_data: dict[str, Any],
     json_url: Optional[str],
     csv_url: Optional[str],
@@ -122,6 +123,7 @@ def save_dataset_metadata(
             dataset_id=dataset_id,
             source_url=source_url,
             publisher_name=publisher_name,
+            publisher_country=publisher_country,
             license_url=license_url,
             license_title=license_title,
             license_title_short=license_title_short,
@@ -135,9 +137,9 @@ def save_dataset_metadata(
         raise ProcessDatasetError(f"Failed to update metadata for dataset: {e}")
 
 
-def process_dataset(dataset_id: str, source_url: str) -> None:
+def process_dataset(dataset_id: str, registry_metadata: dict[str, str]) -> None:
     logger.info(f"Processing dataset {dataset_id}")
-    json_data = download_json(dataset_id, source_url)
+    json_data = download_json(dataset_id, registry_metadata["source_url"])
     validate_json(dataset_id, json_data)
     json_path = write_json_to_file(
         file_name=f"data/{dataset_id}/{dataset_id}.json",
@@ -149,7 +151,8 @@ def process_dataset(dataset_id: str, source_url: str) -> None:
     )
     save_dataset_metadata(
         dataset_id=dataset_id,
-        source_url=source_url,
+        source_url=registry_metadata["source_url"],
+        publisher_country=registry_metadata["country"],
         json_data=json_data,
         json_url=json_public_url,
         csv_url=csv_public_url,
@@ -158,7 +161,7 @@ def process_dataset(dataset_id: str, source_url: str) -> None:
     logger.info(f"Processed dataset {dataset_id}")
 
 
-def process_deleted_datasets(registered_datasets: dict[str, str]) -> None:
+def process_deleted_datasets(registered_datasets: dict[str, dict[str, str]]) -> None:
     stored_datasets = get_dataset_ids()
     deleted_datasets = stored_datasets - registered_datasets.keys()
     for dataset_id in deleted_datasets:
@@ -171,13 +174,17 @@ def process_registry() -> None:
     registered_datasets = fetch_registered_datasets()
     process_deleted_datasets(registered_datasets)
     errors: list[dict[str, Any]] = []
-    for dataset_id, url in registered_datasets.items():
+    for dataset_id, registry_metadata in registered_datasets.items():
         try:
-            process_dataset(dataset_id, url)
+            process_dataset(dataset_id, registry_metadata)
         except Exception as e:
             logger.warning(f"Failed to process dataset {dataset_id} with error {e}")
             errors.append(
-                {"dataset_id": dataset_id, "source_url": url, "message": str(e)}
+                {
+                    "dataset_id": dataset_id,
+                    "source_url": registry_metadata["source_url"],
+                    "message": str(e),
+                }
             )
     if errors:
         logger.error(
