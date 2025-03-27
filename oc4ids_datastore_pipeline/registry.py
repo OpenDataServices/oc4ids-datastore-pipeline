@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 _license_mappings = None
 
 
-def fetch_registered_datasets() -> dict[str, str]:
+def fetch_registered_datasets() -> dict[str, dict[str, str]]:
     logger.info("Fetching registered datasets list from registry")
     try:
         url = "https://opendataservices.github.io/oc4ids-registry/datatig/type/dataset/records_api.json"  # noqa: E501
@@ -17,7 +17,10 @@ def fetch_registered_datasets() -> dict[str, str]:
         r.raise_for_status()
         json_data = r.json()
         registered_datasets = {
-            key: value["fields"]["url"]["value"]
+            key: {
+                "source_url": value["fields"]["url"]["value"],
+                "country": value["fields"]["country"]["value"],
+            }
             for (key, value) in json_data["records"].items()
         }
         registered_datasets_count = len(registered_datasets)

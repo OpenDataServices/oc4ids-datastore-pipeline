@@ -132,7 +132,9 @@ def test_process_deleted_datasets(mocker: MockerFixture) -> None:
         "oc4ids_datastore_pipeline.pipeline.delete_files_for_dataset"
     )
 
-    registered_datasets = {"test_dataset": "https://test_dataset.json"}
+    registered_datasets = {
+        "test_dataset": {"source_url": "https://test_dataset.json", "country": "ab"}
+    }
     process_deleted_datasets(registered_datasets)
 
     patch_delete_dataset.assert_called_once_with("old_dataset")
@@ -146,7 +148,9 @@ def test_process_dataset_raises_failure_exception(mocker: MockerFixture) -> None
     patch_download_json.side_effect = ProcessDatasetError("Download failed: Exception")
 
     with pytest.raises(ProcessDatasetError) as exc_info:
-        process_dataset("test_dataset", "https://test_dataset.json")
+        process_dataset(
+            "test_dataset", {"source_url": "https://test_dataset.json", "country": "ab"}
+        )
 
     assert "Download failed: Exception" in str(exc_info.value)
 
@@ -156,7 +160,7 @@ def test_process_registry_catches_exception(mocker: MockerFixture) -> None:
         "oc4ids_datastore_pipeline.pipeline.fetch_registered_datasets"
     )
     patch_fetch_registered_datasets.return_value = {
-        "test_dataset": "https://test_dataset.json"
+        "test_dataset": {"source_url": "https://test_dataset.json", "country": "ab"}
     }
     mocker.patch("oc4ids_datastore_pipeline.pipeline.process_deleted_datasets")
     patch_process_dataset = mocker.patch(
