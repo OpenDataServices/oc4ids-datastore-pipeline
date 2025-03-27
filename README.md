@@ -29,15 +29,46 @@ export DATABASE_URL="postgresql://oc4ids_datastore@localhost/oc4ids_datastore"
 alembic upgrade head
 ```
 
-### S3 environment variables
+### DigitalOcean Spaces bucket setup
 
-To enable files to be uploaded to S3-compatible storage, the following environment variables must be set:
+If enabled, the pipeline will upload the files to a [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces) bucket.
+
+#### Create the bucket
+
+First create the bucket with DigitalOcean.
+
+If doing this via the UI, take the following steps:
+
+1. Choose any region
+2. Enable CDN
+3. Choose any bucket name
+4. Click "Create a Spaces Bucket"
+
+#### Create access key
+
+After the bucket is created, create an access key in DigitalOcean.
+
+If doing this via the UI, take the following steps:
+
+1. Go to your bucket
+2. Go to settings
+3. Under "Access Keys" click "Create Access Key"
+4. Set the access scope to "Limited Access"
+5. Select your bucket from the list and set "Permissions" to "Read/Write/Delete"
+6. Choose any name
+7. Click "Create Access Key"
+
+Securely store the access key ID and secret.
+
+#### Set the required environment variables
+
+Once you have created the bucket and access key, set the following environment variables for the pipeline:
 
 - `ENABLE_UPLOAD`: 1 to enable, 0 to disable
-- `BUCKET_REGION`:
-- `BUCKET_NAME`
-- `BUCKET_ACCESS_KEY_ID`
-- `BUCKET_ACCESS_KEY_SECRET`
+- `BUCKET_REGION`: e.g. `fra1`
+- `BUCKET_NAME`: e.g. `my-bucket`
+- `BUCKET_ACCESS_KEY_ID`: e.g. `access-key-id`
+- `BUCKET_ACCESS_KEY_SECRET`: e.g. `access-key-secret`
 
 To make this easier, the project uses [`python-dotenv`](https://github.com/theskumar/python-dotenv) to load environment variables from a config file.
 For local development, create a file called `.env.local`, which will be used by default.
