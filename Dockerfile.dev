@@ -1,0 +1,16 @@
+FROM python:3.12-bookworm
+
+RUN apt-get update \
+  && apt-get install -y libpq-dev gcc postgresql-client
+
+WORKDIR /oc4ids_datastore_pipeline
+
+COPY requirements_dev.txt .
+
+RUN pip install -r requirements_dev.txt
+
+COPY . .
+
+RUN pip install .
+
+ENTRYPOINT ["sleep", "infinity"]

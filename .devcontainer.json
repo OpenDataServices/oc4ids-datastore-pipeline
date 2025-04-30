@@ -1,0 +1,11 @@
+{
+	"name": "OC4IDS Datastore Pipeline Dev Container",
+	"dockerComposeFile": "docker-compose.dev.yml",
+	"service": "app",
+	"workspaceFolder": "/oc4ids_datastore_pipeline",
+	"customizations": {
+		"vscode": {
+			"extensions":["ms-python.python"]
+		}
+	}
+}
