@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/oc4ids_datastore_pipeline:cached
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@localhost/postgres
+    entrypoint: sleep infinity
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    # Forwarding this port so people can access the DB when run via Docker Compose without dev containers.
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres-data:
