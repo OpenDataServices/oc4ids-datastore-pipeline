@@ -2,25 +2,16 @@
 
 A Python application to validate and store published OC4IDS datasets.
 
-## Local Development
+## Local Development via Dev Containers or Docker Compose
 
-### Prerequisites
+You can open this repository in a dev container to get an environment complete with Postgres database.
 
-- Python 3.12
-- Postgres
-
-### Install Python requirements
+If you prefer to use Docker Compose, you can instead run:
 
 ```
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements_dev.txt
-```
-
-### Set database enrivonment variable
-
-```
-export DATABASE_URL="postgresql://oc4ids_datastore@localhost/oc4ids_datastore"
+docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml exec app bash
+docker compose -f docker-compose.dev.yml stop
 ```
 
 ### Run database migrations
@@ -89,9 +80,19 @@ To send failure notifications by email, the following environment variables must
 ### Run app
 
 ```
-pip install -e .
 oc4ids-datastore-pipeline
 ```
+### Access Database
+
+From inside the dev container or Docker container:
+
+```
+psql postgresql://postgres:postgres@localhost:5432/postgres
+```
+
+Connecting from outside:
+* If using a dev container or Docker Compose locally the same command should work
+* In GitHub Codespaces, we're not sure how to access the port
 
 ### Run linting and type checking
 
