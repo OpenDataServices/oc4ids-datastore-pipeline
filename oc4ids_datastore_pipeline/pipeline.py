@@ -111,6 +111,8 @@ def save_dataset_metadata(
     json_url: Optional[str],
     csv_url: Optional[str],
     xlsx_url: Optional[str],
+    portal_title: Optional[str],
+    portal_url: Optional[str],
 ) -> None:
     logger.info(f"Saving metadata for dataset {dataset_id}")
     try:
@@ -127,6 +129,8 @@ def save_dataset_metadata(
             license_url=license_url,
             license_title=license_title,
             license_title_short=license_title_short,
+            portal_title=portal_title,
+            portal_url=portal_url,
             json_url=json_url,
             csv_url=csv_url,
             xlsx_url=xlsx_url,
@@ -157,6 +161,8 @@ def process_dataset(dataset_id: str, registry_metadata: dict[str, str]) -> None:
         json_url=json_public_url,
         csv_url=csv_public_url,
         xlsx_url=xlsx_public_url,
+        portal_title=registry_metadata["portal_title"],
+        portal_url=registry_metadata["portal_url"],
     )
     logger.info(f"Processed dataset {dataset_id}")
 

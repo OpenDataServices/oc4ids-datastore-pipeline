@@ -28,6 +28,8 @@ def test_fetch_registered_datasets(mocker: MockerFixture) -> None:
             "fields": {
                 "url": {"value": "https://test_dataset.json"},
                 "country": {"value": "ab"},
+                "portal_title": {"value": "Our Portal"},
+                "portal_url": {"value": "https://our.portal"},
             }
         },
     ]
@@ -37,7 +39,12 @@ def test_fetch_registered_datasets(mocker: MockerFixture) -> None:
     result = fetch_registered_datasets()
 
     assert result == {
-        "test_dataset": {"source_url": "https://test_dataset.json", "country": "ab"}
+        "test_dataset": {
+            "source_url": "https://test_dataset.json",
+            "country": "ab",
+            "portal_title": "Our Portal",
+            "portal_url": "https://our.portal",
+        }
     }
 
 

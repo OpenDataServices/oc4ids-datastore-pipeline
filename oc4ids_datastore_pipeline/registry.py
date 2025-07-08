@@ -24,6 +24,8 @@ def fetch_registered_datasets() -> dict[str, dict[str, str]]:
             registered_datasets[key] = {
                 "source_url": r_data_json["fields"]["url"]["value"],
                 "country": r_data_json["fields"]["country"]["value"],
+                "portal_title": r_data_json["fields"]["portal_title"]["value"],
+                "portal_url": r_data_json["fields"]["portal_url"]["value"],
             }
         registered_datasets_count = len(registered_datasets)
         logger.info(f"Fetched URLs for {registered_datasets_count} datasets")
