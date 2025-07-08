@@ -12,16 +12,25 @@ from oc4ids_datastore_pipeline.registry import (
 
 def test_fetch_registered_datasets(mocker: MockerFixture) -> None:
     mock_response = MagicMock()
-    mock_response.json.return_value = {
-        "records": {
-            "test_dataset": {
-                "fields": {
-                    "url": {"value": "https://test_dataset.json"},
-                    "country": {"value": "ab"},
+    mock_response.json.side_effect = [
+        {
+            "records": {
+                "test_dataset": {
+                    "api_url": "http://www.example.com",
+                    "fields": {
+                        "url": {"value": "https://test_dataset.json"},
+                        "country": {"value": "ab"},
+                    },
                 }
             }
-        }
-    }
+        },
+        {
+            "fields": {
+                "url": {"value": "https://test_dataset.json"},
+                "country": {"value": "ab"},
+            }
+        },
+    ]
     patch_get = mocker.patch("oc4ids_datastore_pipeline.pipeline.requests.get")
     patch_get.return_value = mock_response
 
