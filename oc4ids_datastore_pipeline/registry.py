@@ -16,13 +16,17 @@ def fetch_registered_datasets() -> dict[str, dict[str, str]]:
         r = requests.get(url)
         r.raise_for_status()
         json_data = r.json()
-        registered_datasets = {
-            key: {
-                "source_url": value["fields"]["url"]["value"],
-                "country": value["fields"]["country"]["value"],
+        registered_datasets = {}
+        for key, value in json_data["records"].items():
+            r_data = requests.get(value["api_url"])
+            r_data.raise_for_status()
+            r_data_json = r_data.json()
+            registered_datasets[key] = {
+                "source_url": r_data_json["fields"]["url"]["value"],
+                "country": r_data_json["fields"]["country"]["value"],
+                "portal_title": r_data_json["fields"]["portal_title"]["value"],
+                "portal_url": r_data_json["fields"]["portal_url"]["value"],
             }
-            for (key, value) in json_data["records"].items()
-        }
         registered_datasets_count = len(registered_datasets)
         logger.info(f"Fetched URLs for {registered_datasets_count} datasets")
     except Exception as e:

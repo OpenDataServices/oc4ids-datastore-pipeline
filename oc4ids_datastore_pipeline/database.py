@@ -36,6 +36,8 @@ class Dataset(Base):
     csv_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     xlsx_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
+    portal_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    portal_title: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
 def get_engine() -> Engine:
