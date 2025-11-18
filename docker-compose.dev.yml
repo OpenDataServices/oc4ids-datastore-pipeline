@@ -12,7 +12,7 @@ services:
     entrypoint: sleep infinity
 
   db:
-    image: postgres:latest
+    image: postgres:14
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
