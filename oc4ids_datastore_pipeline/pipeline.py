@@ -45,6 +45,8 @@ def download_json(dataset_id: str, url: str) -> Any:
                 "end_date": datetime.datetime.today().strftime("%Y-%m-%d"),
             }
             r = requests.post(url, json=payload)
+        elif dataset_id == "indonesia_cost_west_lombok":
+            r = requests.get(url, verify=False)
         else:
             r = requests.get(url)
         r.raise_for_status()
