@@ -53,10 +53,14 @@ flattentool==0.27.0
     # via
     #   libcove
     #   oc4ids-datastore-pipeline (pyproject.toml)
+greenlet==3.3.0
+    # via sqlalchemy
 idna==3.10
     # via requests
 ijson==3.3.0
-    # via flattentool
+    # via
+    #   flattentool
+    #   ocdskit
 iniconfig==2.0.0
     # via pytest
 isort==6.0.0
@@ -67,12 +71,16 @@ jmespath==1.0.1
     #   botocore
 json-merge-patch==0.2
     # via ocdsextensionregistry
+jsonpointer==3.0.0
+    # via oc4idskit
 jsonref==1.1.0
     # via
     #   flattentool
     #   libcove
     #   libcoveocds
     #   ocdsextensionregistry
+    #   ocdskit
+    #   ocdsmerge
 jsonschema==4.23.0
     # via
     #   libcove
@@ -101,8 +109,18 @@ mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
+oc4idskit==0.0.4
+    # via oc4ids-datastore-pipeline (pyproject.toml)
 ocdsextensionregistry==0.6.9
-    # via libcoveocds
+    # via
+    #   libcoveocds
+    #   ocdskit
+ocdskit==1.5.0
+    # via oc4idskit
+ocdsmerge==0.8.0
+    # via
+    #   oc4idskit
+    #   ocdskit
 odfpy==1.4.1
     # via flattentool
 openpyxl==3.1.5
@@ -155,6 +173,7 @@ requests==2.32.3
     #   libcoveocds
     #   oc4ids-datastore-pipeline (pyproject.toml)
     #   ocdsextensionregistry
+    #   ocdsmerge
     #   requests-cache
 requests-cache==1.2.1
     # via ocdsextensionregistry
