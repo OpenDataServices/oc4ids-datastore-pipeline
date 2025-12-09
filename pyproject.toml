@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "oc4ids-datastore-pipeline"
 description = "OC4IDS Datastore Pipeline"
-version = "0.7.0"
+version = "0.8.0"
 readme = "README.md"
 dependencies = [
   "alembic",
