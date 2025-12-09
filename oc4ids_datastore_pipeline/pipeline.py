@@ -1,13 +1,16 @@
 import datetime
+import io
 import json
 import logging
 import os
+import zipfile
 from pathlib import Path
 from typing import Any, Optional
 
 import flattentool
 import requests
 from libcoveoc4ids.api import oc4ids_json_output
+from oc4idskit.combine import combine_project_packages
 
 from oc4ids_datastore_pipeline.database import (
     Dataset,
@@ -36,6 +39,63 @@ class ValidationError(ProcessDatasetError):
         super().__init__(message)
 
 
+def download_ecuador_packages(base_url: str) -> Any:
+    packages = []
+    start_year = 2020
+    current_year = datetime.datetime.now().year
+    years = list(range(start_year, current_year + 1))
+
+    for year in years:
+        url = f"{base_url}{year}.zip"
+        try:
+            response = requests.get(url, verify=False, stream=True)
+            if response.status_code != 200:
+                logger.warning(
+                    f"Could not download {url}: Status {response.status_code}"
+                )
+                continue
+            zip_data = io.BytesIO(response.content)
+            with zipfile.ZipFile(zip_data, "r") as zip_ref:
+                for filename in zip_ref.namelist():
+                    if filename.endswith(".json"):
+                        with zip_ref.open(filename) as f:
+                            package = json.load(f)
+                            packages.append(package)
+        except (zipfile.BadZipFile, requests.RequestException) as e:
+            logger.error(f"Error processing {url}: {e}")
+            continue
+
+    if not packages:
+        raise ProcessDatasetError(f"No valid packages found at {base_url}")
+
+    # Arguments to combine packages
+    combine_args = {}
+
+    if packages[-1].get("uri"):
+        combine_args["uri"] = packages[-1].get("uri")
+
+    versions = {
+        package.get("version") for package in packages if package.get("version")
+    }
+    if len(versions) > 1:
+        logger.warning(f"Packages declare more than one version: {versions}")
+    if versions:
+        combine_args["version"] = list(versions)[0]
+
+    published_dates = {
+        package.get("publishedDate")
+        for package in packages
+        if package.get("publishedDate")
+    }
+    if published_dates:
+        combine_args["published_date"] = max(published_dates)
+
+    logger.info(f"Combining {len(packages)} packages for Ecuador")
+    return combine_project_packages(
+        packages, **combine_args
+    )  # type: ignore[no-untyped-call]
+
+
 def download_json(dataset_id: str, url: str) -> Any:
     logger.info(f"Downloading json from {url}")
     try:
@@ -47,6 +107,8 @@ def download_json(dataset_id: str, url: str) -> Any:
             r = requests.post(url, json=payload)
         elif dataset_id == "indonesia_cost_west_lombok":
             r = requests.get(url, verify=False)
+        elif dataset_id == "ecuador_cost_ecuador":
+            return download_ecuador_packages(url)
         else:
             r = requests.get(url)
         r.raise_for_status()
