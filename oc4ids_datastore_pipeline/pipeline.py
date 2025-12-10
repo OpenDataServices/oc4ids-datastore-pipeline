@@ -148,6 +148,18 @@ def write_json_to_file(file_name: str, json_data: dict[str, Any]) -> str:
 
 
 def transform_to_csv_and_xlsx(json_path: str) -> tuple[Optional[str], Optional[str]]:
+    # File size check
+    file_size: int = os.path.getsize(json_path)
+    max_file_size: int = int(os.environ.get("TRANSFORM_MAX_FILE_SIZE", "400000"))
+    if file_size > max_file_size:
+        logger.info(
+            (
+                "File {} has size {}, bigger than max allowed size of {}"
+                + ", so skipping transform."
+            ).format(json_path, file_size, max_file_size)
+        )
+        return None, None
+    # Ok, go
     logger.info(f"Transforming {json_path}")
     try:
         path = Path(json_path)

@@ -101,6 +101,7 @@ def test_write_json_to_file_raises_failure_exception(mocker: MockerFixture) -> N
 
 def test_transform_to_csv_and_xlsx_returns_correct_paths(mocker: MockerFixture) -> None:
     mocker.patch("oc4ids_datastore_pipeline.pipeline.flattentool.flatten")
+    mocker.patch("os.path.getsize", return_value=1)
 
     csv_path, xlsx_path = transform_to_csv_and_xlsx("dir/dataset/dataset.json")
 
@@ -113,6 +114,7 @@ def test_transform_to_csv_and_xlsx_catches_exception(mocker: MockerFixture) -> N
         "oc4ids_datastore_pipeline.pipeline.flattentool.flatten"
     )
     patch_flatten.side_effect = Exception("Mocked exception")
+    mocker.patch("os.path.getsize", return_value=1)
 
     csv_path, xlsx_path = transform_to_csv_and_xlsx("dir/dataset/dataset.json")
 
