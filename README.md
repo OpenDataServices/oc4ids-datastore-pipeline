@@ -77,6 +77,10 @@ To send failure notifications by email, the following environment variables must
 - `NOTIFICATIONS_SENDER_EMAIL`
 - `NOTIFICATIONS_RECEIVER_EMAIL`
 
+### Other environment variables
+
+- `TRANSFORM_MAX_FILE_SIZE` - Integer, Bytes. JSON files over this size will not be transformed to CSV and Excel.
+
 ### Run app
 
 ```
