@@ -96,6 +96,37 @@ def download_ecuador_packages(base_url: str) -> Any:
     )  # type: ignore[no-untyped-call]
 
 
+def build_costa_rica_url(base_url: str) -> str:
+    """
+    Builds the Costa Rica URL by looking back up to 13 months
+    to find the most recent available upload.
+    """
+    filename = "OC4IDSJSONCFIA.json"
+
+    now = datetime.datetime.today()
+    url_year = now.year
+    url_month = now.month
+    for i in range(13):
+        url = f"{base_url}{url_year}/{url_month:02d}/{filename}"
+        try:
+            response = requests.head(url)
+            if response.status_code == 200:
+                logger.info(f"Costa Rica: Located latest data at {url}")
+                return url
+        except Exception as e:
+            logger.warning(f"Costa Rica: Connection error at {url}: {e}")
+
+        url_month -= 1  # Look back one month
+        if url_month == 0:
+            url_month = 12
+            url_year -= 1
+
+    raise ProcessDatasetError(
+        "Costa Rica: Could not find a dataset URL at "
+        f"{base_url} within 13 month look back."
+    )
+
+
 def download_json(dataset_id: str, url: str) -> Any:
     logger.info(f"Downloading json from {url}")
     try:
@@ -109,6 +140,9 @@ def download_json(dataset_id: str, url: str) -> Any:
             r = requests.get(url, verify=False)
         elif dataset_id == "ecuador_cost_ecuador":
             return download_ecuador_packages(url)
+        elif dataset_id == "costa_rica_cfia":
+            url = build_costa_rica_url(url)
+            r = requests.get(url)
         else:
             r = requests.get(url)
         r.raise_for_status()
@@ -256,6 +290,7 @@ def process_registry() -> None:
     registered_datasets = fetch_registered_datasets()
     process_deleted_datasets(registered_datasets)
     errors: list[dict[str, Any]] = []
+
     for dataset_id, registry_metadata in registered_datasets.items():
         try:
             process_dataset(dataset_id, registry_metadata)
