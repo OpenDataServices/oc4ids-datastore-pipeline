@@ -96,6 +96,35 @@ def download_ecuador_packages(base_url: str) -> Any:
     )  # type: ignore[no-untyped-call]
 
 
+def build_costa_rica_url(base_url: str) -> str:
+    """
+    Builds the Costa Rica URL by looking back up to the last known dataset
+    to find the most recent available upload.
+    """
+    filename = "OC4IDSJSONCFIA.json"
+
+    start_date = datetime.datetime(2026, 3, 1)  # Earliest known dataset
+    today = datetime.datetime.today()
+    date_to_try = today.replace(day=1)
+
+    while date_to_try >= start_date:
+        url = f"{base_url}{date_to_try.year}/{date_to_try.month:02d}/{filename}"
+        try:
+            response = requests.head(url)
+            if response.status_code == 200:
+                logger.info(f"Costa Rica: Located latest data at {url}")
+                return url
+        except Exception as e:
+            logger.warning(f"Costa Rica: Connection error at {url}: {e}")
+
+        date_to_try = (date_to_try - datetime.timedelta(days=1)).replace(day=1)
+
+    raise ProcessDatasetError(
+        f"Costa Rica: Could not find a dataset URL at {base_url} "
+        f"between now and {start_date.strftime('%Y-%m')}."
+    )
+
+
 def download_json(dataset_id: str, url: str) -> Any:
     logger.info(f"Downloading json from {url}")
     try:
@@ -109,6 +138,9 @@ def download_json(dataset_id: str, url: str) -> Any:
             r = requests.get(url, verify=False)
         elif dataset_id == "ecuador_cost_ecuador":
             return download_ecuador_packages(url)
+        elif dataset_id == "costa_rica_cfia":
+            url = build_costa_rica_url(url)
+            r = requests.get(url)
         else:
             r = requests.get(url)
         r.raise_for_status()
@@ -256,6 +288,7 @@ def process_registry() -> None:
     registered_datasets = fetch_registered_datasets()
     process_deleted_datasets(registered_datasets)
     errors: list[dict[str, Any]] = []
+
     for dataset_id, registry_metadata in registered_datasets.items():
         try:
             process_dataset(dataset_id, registry_metadata)
