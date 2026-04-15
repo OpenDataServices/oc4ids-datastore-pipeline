@@ -98,16 +98,17 @@ def download_ecuador_packages(base_url: str) -> Any:
 
 def build_costa_rica_url(base_url: str) -> str:
     """
-    Builds the Costa Rica URL by looking back up to 13 months
+    Builds the Costa Rica URL by looking back up to the last known dataset
     to find the most recent available upload.
     """
     filename = "OC4IDSJSONCFIA.json"
 
-    now = datetime.datetime.today()
-    url_year = now.year
-    url_month = now.month
-    for i in range(13):
-        url = f"{base_url}{url_year}/{url_month:02d}/{filename}"
+    start_date = datetime.datetime(2026, 3, 1)  # Earliest known dataset
+    today = datetime.datetime.today()
+    date_to_try = today.replace(day=1)
+
+    while date_to_try >= start_date:
+        url = f"{base_url}{date_to_try.year}/{date_to_try.month:02d}/{filename}"
         try:
             response = requests.head(url)
             if response.status_code == 200:
@@ -116,14 +117,11 @@ def build_costa_rica_url(base_url: str) -> str:
         except Exception as e:
             logger.warning(f"Costa Rica: Connection error at {url}: {e}")
 
-        url_month -= 1  # Look back one month
-        if url_month == 0:
-            url_month = 12
-            url_year -= 1
+        date_to_try = (date_to_try - datetime.timedelta(days=1)).replace(day=1)
 
     raise ProcessDatasetError(
-        "Costa Rica: Could not find a dataset URL at "
-        f"{base_url} within 13 month look back."
+        f"Costa Rica: Could not find a dataset URL at {base_url} "
+        f"between now and {start_date.strftime('%Y-%m')}."
     )
 
 
