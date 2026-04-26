@@ -139,8 +139,11 @@ def download_json(dataset_id: str, url: str) -> Any:
         elif dataset_id == "ecuador_cost_ecuador":
             return download_ecuador_packages(url)
         elif dataset_id == "costa_rica_cfia":
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
             url = build_costa_rica_url(url)
-            r = requests.get(url)
+            r = requests.get(url, headers=headers)
         else:
             r = requests.get(url)
         r.raise_for_status()
