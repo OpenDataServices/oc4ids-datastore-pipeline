@@ -149,9 +149,23 @@ def download_json(dataset_id: str, url: str) -> Any:
         r.raise_for_status()
         response_size = len(r.content)
         logger.info(f"Downloaded {url} ({response_size} bytes)")
-        return r.json()
+        try:
+            return r.json()
+        except Exception as parse_err:
+            error_details = (
+                f"JSON DECODE FAILED FOR: {dataset_id}\n"
+                f"Status: {r.status_code}\n"
+                f"Content-Type: {r.headers.get('Content-Type')}\n"
+                f"--- Response snippet ---\n"
+                f"{r.text[:1000]}\n"
+            )
+            logger.error(error_details)
+            raise ProcessDatasetError(error_details) from parse_err
     except Exception as e:
-        raise ProcessDatasetError(f"Download failed: {str(e)}")
+        if not isinstance(e, ProcessDatasetError):
+            raise ProcessDatasetError(f"Download failed: {str(e)}")
+        else:
+            raise e
 
 
 def validate_json(dataset_id: str, json_data: dict[str, Any]) -> None:
