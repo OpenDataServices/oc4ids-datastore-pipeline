@@ -39,6 +39,39 @@ class ValidationError(ProcessDatasetError):
         super().__init__(message)
 
 
+def _combine_packages(packages: list[Any], dataset_label: str) -> Any:
+    if not packages:
+        raise ProcessDatasetError(f"No valid packages found for {dataset_label}")
+
+    combine_args = {}
+
+    if packages[-1].get("uri"):
+        combine_args["uri"] = packages[-1].get("uri")
+
+    versions = {
+        package.get("version") for package in packages if package.get("version")
+    }
+    if len(versions) > 1:
+        logger.warning(
+            f"{dataset_label} packages declare more than one version: {versions}"
+        )
+    if versions:
+        combine_args["version"] = list(versions)[0]
+
+    published_dates = {
+        package.get("publishedDate")
+        for package in packages
+        if package.get("publishedDate")
+    }
+    if published_dates:
+        combine_args["published_date"] = max(published_dates)
+
+    logger.info(f"Combining {len(packages)} packages for {dataset_label}")
+    return combine_project_packages(
+        packages, **combine_args
+    )  # type: ignore[no-untyped-call]
+
+
 def download_ecuador_packages(base_url: str) -> Any:
     packages = []
     start_year = 2020
@@ -65,35 +98,30 @@ def download_ecuador_packages(base_url: str) -> Any:
             logger.error(f"Error processing {url}: {e}")
             continue
 
-    if not packages:
-        raise ProcessDatasetError(f"No valid packages found at {base_url}")
+    return _combine_packages(packages, "Ecuador")
 
-    # Arguments to combine packages
-    combine_args = {}
 
-    if packages[-1].get("uri"):
-        combine_args["uri"] = packages[-1].get("uri")
+def download_uganda_packages(base_url: str) -> Any:
+    packages = []
+    url = base_url
 
-    versions = {
-        package.get("version") for package in packages if package.get("version")
-    }
-    if len(versions) > 1:
-        logger.warning(f"Packages declare more than one version: {versions}")
-    if versions:
-        combine_args["version"] = list(versions)[0]
+    while url:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            package = response.json()
+            packages.append(package)
+            url = package.get("links", {}).get("next")
+        except requests.RequestException as e:
+            raise ProcessDatasetError(
+                f"Error downloading Uganda package from {url}: {e}"
+            )
+        except Exception as e:
+            raise ProcessDatasetError(
+                f"Error parsing Uganda package from {url}: {e}"
+            )
 
-    published_dates = {
-        package.get("publishedDate")
-        for package in packages
-        if package.get("publishedDate")
-    }
-    if published_dates:
-        combine_args["published_date"] = max(published_dates)
-
-    logger.info(f"Combining {len(packages)} packages for Ecuador")
-    return combine_project_packages(
-        packages, **combine_args
-    )  # type: ignore[no-untyped-call]
+    return _combine_packages(packages, "Uganda")
 
 
 def build_costa_rica_url(base_url: str) -> str:
@@ -138,6 +166,8 @@ def download_json(dataset_id: str, url: str) -> Any:
             r = requests.get(url, verify=False)
         elif dataset_id == "ecuador_cost_ecuador":
             return download_ecuador_packages(url)
+        elif dataset_id == "uganda_cost_uganda":
+            return download_uganda_packages(url)
         elif dataset_id == "costa_rica_cfia":
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"  # noqa: E501
