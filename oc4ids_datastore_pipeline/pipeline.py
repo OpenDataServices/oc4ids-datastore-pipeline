@@ -117,9 +117,7 @@ def download_uganda_packages(base_url: str) -> Any:
                 f"Error downloading Uganda package from {url}: {e}"
             )
         except Exception as e:
-            raise ProcessDatasetError(
-                f"Error parsing Uganda package from {url}: {e}"
-            )
+            raise ProcessDatasetError(f"Error parsing Uganda package from {url}: {e}")
 
     return _combine_packages(packages, "Uganda")
 
