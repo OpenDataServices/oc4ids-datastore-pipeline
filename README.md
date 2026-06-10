@@ -125,4 +125,4 @@ To publish a new version, raise a PR to `main` updating the version in `pyprojec
 
 ## Deploying
 
-To deploy a new version to the live server, ask the ODS Technical Infrastructure Group.
+To deploy a new version to the live server, ask the ODS Technical Infrastructure Group to perform the deployment according to the process documented in the the ODS internal Technical Documentation.
