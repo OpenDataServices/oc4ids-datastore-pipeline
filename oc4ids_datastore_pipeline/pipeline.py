@@ -164,7 +164,7 @@ def download_json(dataset_id: str, url: str) -> Any:
             r = requests.get(url, verify=False)
         elif dataset_id == "ecuador_cost_ecuador":
             return download_ecuador_packages(url)
-        elif dataset_id == "uganda_cost_uganda":
+        elif dataset_id == "uganda_gpp":
             return download_uganda_packages(url)
         elif dataset_id == "costa_rica_cfia":
             headers = {
