@@ -81,7 +81,7 @@ def download_ecuador_packages(base_url: str) -> Any:
     for year in years:
         url = f"{base_url}{year}.zip"
         try:
-            response = requests.get(url, verify=False, stream=True)
+            response = requests.get(url, verify=False, stream=True, timeout=(10, 60))
             if response.status_code != 200:
                 logger.warning(
                     f"Could not download {url}: Status {response.status_code}"
@@ -107,7 +107,7 @@ def download_uganda_packages(base_url: str) -> Any:
 
     while url:
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=(10, 30))
             response.raise_for_status()
             package = response.json()
             packages.append(package)
@@ -159,9 +159,9 @@ def download_json(dataset_id: str, url: str) -> Any:
                 "start_date": "2010-01-01",
                 "end_date": datetime.datetime.today().strftime("%Y-%m-%d"),
             }
-            r = requests.post(url, json=payload)
+            r = requests.post(url, json=payload, timeout=(10, 30))
         elif dataset_id == "indonesia_cost_west_lombok":
-            r = requests.get(url, verify=False)
+            r = requests.get(url, verify=False, timeout=(10, 30))
         elif dataset_id == "ecuador_cost_ecuador":
             return download_ecuador_packages(url)
         elif dataset_id == "uganda_gpp":
@@ -171,9 +171,9 @@ def download_json(dataset_id: str, url: str) -> Any:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"  # noqa: E501
             }
             url = build_costa_rica_url(url)
-            r = requests.get(url, headers=headers)
+            r = requests.get(url, headers=headers, timeout=(10, 30))
         else:
-            r = requests.get(url)
+            r = requests.get(url, timeout=(10, 30))
         r.raise_for_status()
         response_size = len(r.content)
         logger.info(f"Downloaded {url} ({response_size} bytes)")
